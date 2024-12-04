@@ -31,7 +31,9 @@ fn main() {
         row_ptr: two_vector,
     };
 
-    let matriz2 = convert_file_CSR(lines);
+    let matriz2 = convert_file_csr(lines);
+
+    println!("{:?}", matriz2.row_ptr);
     
     
 
@@ -75,79 +77,42 @@ pub fn open_file(path: &Path) -> io::Result<File> {
 
 
 
-// fn convert_file_CSR(lines: Vec<String>) -> (Vec<i32>, Vec<usize>, Vec<usize>) {
-//     let mut values = Vec::new();
-//     let mut col_indices = Vec::new();
-//     let mut row_ptr = Vec::new();
-//     let mut current_row = 0;
-
-//     row_ptr.push(0);
-
-//     for line in lines.iter().skip(1) {
-//         let entries: Vec<&str> = line.split_whitespace().collect();
-//         for entry in entries {
-//             let parts: Vec<&str> = entry.split(':').collect();
-//             let col_index: usize = parts[0].parse().unwrap();
-//             let value: i32 = parts[1].parse().unwrap();
-//             values.push(value);
-//             col_indices.push(col_index);
-//         }
-//         current_row += 1;
-//         row_ptr.push(values.len());
-//     }
-
-//     (values, col_indices, row_ptr)
-// }
 
 
-
-fn convert_file_CSR(lines: Vec<String>) -> (Vec<i32>, Vec<usize>, Vec<usize>, usize, usize, usize) {
-
+fn convert_file_csr(lines: Vec<String>) -> Matrix<i32> {
     let mut values = Vec::new();
     let mut col_indices = Vec::new();
-    
-    let mut current_row = 0;
-    
 
-    
 
     let line1 = &lines[0];
-
-    let sizes: Vec<usize> = line1.split_whitespace().map(|x| x.parse().unwrap()).collect(); 
-
+    let sizes: Vec<usize> = line1.split_whitespace().map(|x| x.parse().unwrap()).collect();
     let rows = sizes[0];
+    let columns = sizes[1];
+    let nnz = sizes[2];
 
-    let mut row_ptr = vec![0; rows+1];
-
+    let mut row_ptr = vec![0; rows + 1];
     let mut row_count = vec![0; rows];
 
     for line in lines.iter().skip(1) {
-
         let entries: Vec<&str> = line.split_whitespace().collect();
-
-        values.push((entries[2].parse().expect("Error casting")));
-
-        let mut row: usize = entries[0].parse().expect("Error casting");
-
+        values.push(entries[2].parse().expect("Error casting"));
+        let row: usize = entries[0].parse().expect("Error casting");
         col_indices.push(entries[1].parse().expect("Error casting"));
-
-        row_count[row-1] += 1;
-
-        
-
+        row_count[row - 1] += 1;
     }
 
     for i in 1..=rows {
-        row_ptr[i] = row_count[i-1] + row_ptr[i-1];
+        row_ptr[i] = row_count[i - 1] + row_ptr[i - 1];
     }
 
-    println!("{:?}", row_ptr);
-
-    println!("{:?}", values);
-
-    (values, col_indices, row_ptr, sizes[0], sizes[1], sizes[2])
-
+    Matrix {
+        rows,
+        columns,
+        nnz,
+        values,
+        col_indices,
+        row_ptr,
+    }
 }
-
 
 

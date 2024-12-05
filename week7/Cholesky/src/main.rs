@@ -34,15 +34,13 @@ fn main() {
 
     let matriz2 = convert_file_csr(lines);
 
-    let sum = matriz2.add(&matriz2).expect("Failed to add matrices");
+    let matriz3 = matriz2.to_dense();
 
-    let dis_mat = DenseMatrix {
-        rows:2,
-        columns:2,
-        data: two_vector,
-    };
+    println!("{:?}", matriz3.data);
 
-    println!("{:?}", sum.values)
+    println!("{:?}", matriz2.col_indices);
+    
+    
     
 
 
@@ -87,7 +85,7 @@ pub fn open_file(path: &Path) -> io::Result<File> {
 
 
 
-fn convert_file_csr(lines: Vec<String>) -> Matrix<i32> {
+fn convert_file_csr(lines: Vec<String>) -> Matrix<f64> {
     let mut values = Vec::new();
     let mut col_indices = Vec::new();
 
@@ -124,29 +122,6 @@ fn convert_file_csr(lines: Vec<String>) -> Matrix<i32> {
 }
 
 
-impl<T: std::ops::Add<Output = T> + Copy> Matrix<T> {
-    pub fn add(&self, other: &Matrix<T>) -> Result<Matrix<T>,String> {
-
-        if self.rows != other.rows || self.columns != other.columns {
-            return Err("Matrix dimensions must match".to_string());
-        } else {
-            let cart_prod = self.values.iter().zip(&other.values);
-
-            let suma: Vec<T> = cart_prod.map(|(a,b)| *a+*b).collect();
-
-            Ok(Matrix{
-            rows : self.rows,
-            columns : self.columns,
-            nnz : suma.len(),
-            values: suma,
-            col_indices: self.col_indices.clone(),
-            row_ptr: self.row_ptr.clone(),
-            })
-
-        }
-        
-    }
-}
 
 
 struct DenseMatrix<T> {
@@ -175,5 +150,22 @@ where
     pub fn get(&self, row: usize, col: usize) -> &T {
         assert!(row < self.rows && col < self.columns, "Índices fuera de rango");
         &self.data[row * self.columns + col]
+    }
+}
+
+
+impl Matrix<f64> {
+    pub fn to_dense(&self) -> DenseMatrix<f64> {
+        let mut dense = DenseMatrix::new(self.rows, self.columns);
+
+        for row in 0..self.rows {
+            for idx in self.row_ptr[row]..self.row_ptr[row + 1] {
+                let col = self.col_indices[idx] - 1;
+                let value = self.values[idx];
+                dense.set(row, col, value);
+            }
+        }
+
+        dense
     }
 }

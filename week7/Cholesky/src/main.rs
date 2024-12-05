@@ -33,8 +33,9 @@ fn main() {
 
     let matriz2 = convert_file_csr(lines);
 
-    println!("{:?}", matriz2.row_ptr);
-    
+    let sum = matriz2.add(&matriz2).expect("Failed to add matrices");
+
+    println!("{:?}", sum.values)
     
 
 
@@ -116,3 +117,26 @@ fn convert_file_csr(lines: Vec<String>) -> Matrix<i32> {
 }
 
 
+impl<T: std::ops::Add<Output = T> + Copy> Matrix<T> {
+    pub fn add(&self, other: &Matrix<T>) -> Result<Matrix<T>,String> {
+
+        if self.rows != other.rows || self.columns != other.columns {
+            return Err("Matrix dimensions must match".to_string());
+        } else {
+            let cart_prod = self.values.iter().zip(&other.values);
+
+            let suma: Vec<T> = cart_prod.map(|(a,b)| *a+*b).collect();
+
+            Ok(Matrix{
+            rows : self.rows,
+            columns : self.columns,
+            nnz : suma.len(),
+            values: suma,
+            col_indices: self.col_indices.clone(),
+            row_ptr: self.row_ptr.clone(),
+            })
+
+        }
+        
+    }
+}

@@ -36,9 +36,38 @@ fn main() {
 
     let matriz3 = matriz2.to_dense();
 
+    let conj = matriz3.transpose_conjugate();
+
+    let prod = conj.matmul(&matriz3);
+
     println!("{:?}", matriz3.data);
 
-    println!("{:?}", matriz2.col_indices);
+    println!("{:?}", prod.data);
+
+    let b = vec![size.parse().unwrap(); prod.rows];
+
+    let forw = prod.forward_substitution(&b);
+
+    println!("{:?}", forw);
+
+    let triang = matriz3.cholesky();
+
+    let solut = triang.expect("Sabe").backward_substitution(&b);
+
+    println!("{:?}", solut);
+
+    let m_norm = matriz3.max_norm(&b);
+
+    println!("{}", m_norm);
+
+    let eu_norm = matriz3.euclidean_norm(&b);
+
+    println!("{}", eu_norm);
+
+    
+
+
+    
     
     
     
@@ -169,3 +198,171 @@ impl Matrix<f64> {
         dense
     }
 }
+
+
+
+
+
+
+
+
+impl DenseMatrix<f64> {
+    /// Realiza la descomposición de Cholesky para la matriz densa.
+    /// Devuelve una nueva matriz triangular inferior `L` tal que A = L * Lᵀ.
+    pub fn cholesky(&self) -> Result<DenseMatrix<f64>, String> {
+        if self.rows != self.columns {
+            return Err("La matriz debe ser cuadrada para realizar la descomposición de Cholesky".to_string());
+        }
+
+        let n = self.rows;
+        let mut l = DenseMatrix::new(n, n);
+
+        for i in 0..n {
+            for j in 0..=i {
+                let mut sum = 0.0;
+
+                for k in 0..j {
+                    sum += l.get(i, k) * l.get(j, k);
+                }
+
+                if i == j {
+                    let value = self.get(i, i) - sum;
+                    if value <= 0.0 {
+                        return Err(format!(
+                            "La matriz no es definida positiva. Encontrado un valor negativo o cero en la diagonal en la posición ({}, {})",
+                            i, i
+                        ));
+                    }
+                    l.set(i, j, value.sqrt());
+                } else {
+                    let value = (self.get(i, j) - sum) / l.get(j, j);
+                    l.set(i, j, value);
+                }
+            }
+        }
+
+        Ok(l)
+    }
+}
+
+
+
+impl DenseMatrix<f64> {
+    /// Devuelve la traspuesta de la matriz (conjugada para números complejos).
+    pub fn transpose_conjugate(&self) -> DenseMatrix<f64> {
+        let mut transposed = DenseMatrix::new(self.columns, self.rows); // Cambia filas y columnas
+        for row in 0..self.rows {
+            for col in 0..self.columns {
+                let value = self.get(row, col);
+                transposed.set(col, row, *value); // Intercambia las posiciones fila y columna
+            }
+        }
+        transposed
+    }
+}
+
+
+
+
+
+impl DenseMatrix<f64> {
+    /// Realiza la multiplicación de matrices densa * densa.
+    pub fn matmul(&self, other: &DenseMatrix<f64>) -> DenseMatrix<f64> {
+        assert_eq!(
+            self.columns, other.rows,
+            "El número de columnas de la primera matriz debe coincidir con el número de filas de la segunda matriz"
+        );
+
+        // Crear una nueva matriz para almacenar el resultado.
+        let mut result = DenseMatrix::new(self.rows, other.columns);
+
+        for i in 0..self.rows {
+            for j in 0..other.columns {
+                let mut sum = 0.0;
+                for k in 0..self.columns {
+                    sum += self.get(i, k) * other.get(k, j);
+                }
+                result.set(i, j, sum);
+            }
+        }
+
+        result
+    }
+}
+
+
+
+impl DenseMatrix<f64> {
+    /// Realiza sustitución hacia adelante para resolver Lx = b.
+    /// La matriz L debe ser triangular inferior.
+    pub fn forward_substitution(&self, b: &Vec<f64>) -> Vec<f64> {
+        assert_eq!(self.rows, self.columns, "La matriz debe ser cuadrada");
+        assert_eq!(self.rows, b.len(), "La longitud de b debe coincidir con las filas de la matriz");
+
+        let mut x = vec![0.0; self.rows];
+
+        for i in 0..self.rows {
+            let mut sum = 0.0;
+            for j in 0..i {
+                sum += self.get(i, j) * x[j];
+            }
+            let value = b[i] - sum;
+            let diag = self.get(i, i);
+            assert_ne!(*diag, 0.0, "El elemento diagonal no puede ser cero");
+            x[i] = value / diag;
+        }
+
+        x
+    }
+}
+
+
+
+impl DenseMatrix<f64> {
+    /// Realiza sustitución hacia atrás para resolver Ux = b.
+    /// La matriz U debe ser triangular superior.
+    pub fn backward_substitution(&self, b: &Vec<f64>) -> Vec<f64> {
+        assert_eq!(self.rows, self.columns, "La matriz debe ser cuadrada");
+        assert_eq!(self.rows, b.len(), "La longitud de b debe coincidir con las filas de la matriz");
+
+        let mut x = vec![0.0; self.rows];
+
+        for i in (0..self.rows).rev() {
+            let mut sum = 0.0;
+            for j in (i + 1)..self.columns {
+                sum += self.get(i, j) * x[j];
+            }
+            let value = b[i] - sum;
+            let diag = self.get(i, i);
+            assert_ne!(*diag, 0.0, "El elemento diagonal no puede ser cero");
+            x[i] = value / diag;
+        }
+
+        x
+    }
+}
+
+
+
+
+impl DenseMatrix<f64> {
+    // Calcula la norma máxima entre dos vectores.
+    pub fn max_norm(&self, other: &Vec<f64>) -> f64 {
+        assert_eq!(self.rows, other.len(), "El tamaño del vector debe coincidir con las filas de la matriz");
+
+        // Calculamos el valor absoluto del valor más grande entre los elementos de los dos vectores
+        other.iter().map(|&x| x.abs()).max_by(|a, b| a.partial_cmp(b).unwrap()).unwrap_or(0.0)
+    }
+
+    // Calcula la norma euclidiana entre dos vectores.
+    pub fn euclidean_norm(&self, other: &Vec<f64>) -> f64 {
+        assert_eq!(self.rows, other.len(), "El tamaño del vector debe coincidir con las filas de la matriz");
+
+        // Sumamos los cuadrados de los elementos y sacamos la raíz cuadrada del resultado
+        let sum_of_squares: f64 = other.iter().map(|&x| x * x).sum();
+        sum_of_squares.sqrt()
+    }
+}
+
+
+

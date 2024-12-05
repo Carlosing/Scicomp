@@ -2,6 +2,7 @@ use std::env;
 use std::fs::File;
 use std::io::{self, BufRead, Read};
 use std::path::{Path, PathBuf};
+use std::fmt::Debug;
 
 fn main() {
     let (file_name, size) = get_args().expect("Error getting args");
@@ -28,12 +29,18 @@ fn main() {
         nnz: 11,
         values: zero_vector,
         col_indices: one_vector,
-        row_ptr: two_vector,
+        row_ptr: two_vector.clone(),
     };
 
     let matriz2 = convert_file_csr(lines);
 
     let sum = matriz2.add(&matriz2).expect("Failed to add matrices");
+
+    let dis_mat = DenseMatrix {
+        rows:2,
+        columns:2,
+        data: two_vector,
+    };
 
     println!("{:?}", sum.values)
     
@@ -138,5 +145,35 @@ impl<T: std::ops::Add<Output = T> + Copy> Matrix<T> {
 
         }
         
+    }
+}
+
+
+struct DenseMatrix<T> {
+    rows: usize,
+    columns: usize,
+    data: Vec<T>,
+}
+
+impl<T> DenseMatrix<T>
+where
+    T: Clone + Default,
+{
+    /// Crea una nueva matriz densa con valores por defecto.
+    pub fn new(rows: usize, columns: usize) -> Self {
+        let data = vec![T::default(); rows * columns];
+        DenseMatrix { rows, columns, data }
+    }
+
+    /// Establece un valor en la posición (fila, columna).
+    pub fn set(&mut self, row: usize, col: usize, value: T) {
+        assert!(row < self.rows && col < self.columns, "Índices fuera de rango");
+        self.data[row * self.columns + col] = value;
+    }
+
+    /// Obtiene un valor en la posición (fila, columna).
+    pub fn get(&self, row: usize, col: usize) -> &T {
+        assert!(row < self.rows && col < self.columns, "Índices fuera de rango");
+        &self.data[row * self.columns + col]
     }
 }

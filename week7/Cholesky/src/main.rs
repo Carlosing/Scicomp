@@ -1,3 +1,5 @@
+// Carlos Alberto Escobedo Lopez
+
 use std::env;
 use std::fs::File;
 use std::io::{self, BufRead, Read};
@@ -5,62 +7,59 @@ use std::path::{Path, PathBuf};
 use std::fmt::Debug;
 
 fn main() {
+    // Parse command-line arguments to get the file name and size value.
     let (file_name, size) = get_args().expect("Error getting args");
 
+    // Construct the full path to the file.
     let file_path = get_path(&file_name);
 
+    // Open the specified file.
     let file = open_file(&file_path).expect("Error opening file");
 
+    // Read the file content into lines, handling potential errors.
     let reader = io::BufReader::new(file).lines();
-
     let lines: Vec<String> = reader.collect::<Result<_, _>>().expect("Error reading lines");
 
-    
-
-
+    // Convert the file's lines into a CSR (Compressed Sparse Row) matrix representation.
     let mut matrix = convert_file_csr(lines);
 
+    // Convert the CSR matrix to a dense matrix for further processing.
     let matrix = matrix.to_dense();
 
+    // Compute the conjugate transpose of the dense matrix.
     let matrix_conj = matrix.transpose_conjugate();
 
+    // Perform matrix multiplication to obtain B = A * Aᵀ (A-transpose).
     let B = matrix.matmul(&matrix_conj);
 
-    let L = B.cholesky().expect("Problem with decomp");
+    // Perform Cholesky decomposition to obtain a lower triangular matrix L such that B = L * Lᵀ.
+    let L = B.cholesky().expect("Problem with decomposition");
 
+    // Compute the transpose conjugate of the lower triangular matrix.
     let L_T = L.transpose_conjugate();
 
+    // Validate the decomposition by recomputing the product L * Lᵀ.
     let decomp_prod = L.matmul(&L_T);
 
-    let b = DenseMatrix{
-        rows:decomp_prod.rows,
+    // Prepare a vector `b` with the specified size as its values.
+    let b = DenseMatrix {
+        rows: decomp_prod.rows,
         columns: 1,
-        data: vec![size.parse::<f64>().unwrap(); decomp_prod.rows],};
+        data: vec![size.parse::<f64>().unwrap(); decomp_prod.rows],
+    };
 
+    // Solve the system Lx = b using forward substitution to obtain `x`.
     let x = decomp_prod.forward_substitution(&b);
 
+    // Calculate the error vector as B * x.
     let error = B.matmul(&x);
 
+    // Compute error metrics: maximum norm and Euclidean norm.
     let m_norm = error.max_norm(&b);
-
-    println!("{}", m_norm);
-
     let eu_norm = error.euclidean_norm(&b);
 
-    println!("{}", eu_norm);
-
-    println!("{:?}", b.data);
-
-    
-
-
-    
-    
-    
-    
-
-
-    
+    // Output the results, including the error norms.
+    println!("{}: err_max = {}, err_2 = {}", file_name, m_norm, eu_norm);
 }
 
 
@@ -72,10 +71,6 @@ struct Matrix<T> {
     col_indices : Vec<usize>,
     row_ptr : Vec<usize>,
 }
-
-
-
-
 
 pub fn get_args() -> Result<(String, String), String> {
     // Function to parse command-line arguments
@@ -97,14 +92,9 @@ pub fn open_file(path: &Path) -> io::Result<File> {
     File::open(path) // Opening the file at the specified path
 }
 
-
-
-
-
-fn convert_file_csr(lines: Vec<String>) -> Matrix<f64> {
+pub fn convert_file_csr(lines: Vec<String>) -> Matrix<f64> {
     let mut values = Vec::new();
     let mut col_indices = Vec::new();
-
 
     let line1 = &lines[0];
     let sizes: Vec<usize> = line1.split_whitespace().map(|x| x.parse().unwrap()).collect();
@@ -137,9 +127,6 @@ fn convert_file_csr(lines: Vec<String>) -> Matrix<f64> {
     }
 }
 
-
-
-
 struct DenseMatrix<T> {
     rows: usize,
     columns: usize,
@@ -150,25 +137,24 @@ impl<T> DenseMatrix<T>
 where
     T: Clone + Default,
 {
-    /// Crea una nueva matriz densa con valores por defecto.
+    /// Creates a new dense matrix with default values.
     pub fn new(rows: usize, columns: usize) -> Self {
         let data = vec![T::default(); rows * columns];
         DenseMatrix { rows, columns, data }
     }
 
-    /// Establece un valor en la posición (fila, columna).
+    /// Sets a value at the (row, column) position.
     pub fn set(&mut self, row: usize, col: usize, value: T) {
-        assert!(row < self.rows && col < self.columns, "Índices fuera de rango");
+        assert!(row < self.rows && col < self.columns, "Indices out of range");
         self.data[row * self.columns + col] = value;
     }
 
-    /// Obtiene un valor en la posición (fila, columna).
+    /// Gets a value at the (row, column) position.
     pub fn get(&self, row: usize, col: usize) -> &T {
-        assert!(row < self.rows && col < self.columns, "Índices fuera de rango");
+        assert!(row < self.rows && col < self.columns, "Indices out of range");
         &self.data[row * self.columns + col]
     }
 }
-
 
 impl Matrix<f64> {
     pub fn to_dense(&self) -> DenseMatrix<f64> {
@@ -186,19 +172,12 @@ impl Matrix<f64> {
     }
 }
 
-
-
-
-
-
-
-
 impl DenseMatrix<f64> {
-    /// Realiza la descomposición de Cholesky para la matriz densa.
-    /// Devuelve una nueva matriz triangular inferior `L` tal que A = L * Lᵀ.
+    /// Performs Cholesky decomposition for the dense matrix.
+    /// Returns a new lower triangular matrix `L` such that A = L * Lᵀ.
     pub fn cholesky(&self) -> Result<DenseMatrix<f64>, String> {
         if self.rows != self.columns {
-            return Err("La matriz debe ser cuadrada para realizar la descomposición de Cholesky".to_string());
+            return Err("The matrix must be square to perform Cholesky decomposition".to_string());
         }
 
         let n = self.rows;
@@ -216,7 +195,7 @@ impl DenseMatrix<f64> {
                     let value = self.get(i, i) - sum;
                     if value <= 0.0 {
                         return Err(format!(
-                            "La matriz no es definida positiva. Encontrado un valor negativo o cero en la diagonal en la posición ({}, {})",
+                            "The matrix is not positive definite. Found a negative or zero value on the diagonal at position ({}, {})",
                             i, i
                         ));
                     }
@@ -232,35 +211,29 @@ impl DenseMatrix<f64> {
     }
 }
 
-
-
 impl DenseMatrix<f64> {
-    /// Devuelve la traspuesta de la matriz (conjugada para números complejos).
+    /// Returns the transpose of the matrix (conjugate for complex numbers).
     pub fn transpose_conjugate(&self) -> DenseMatrix<f64> {
-        let mut transposed = DenseMatrix::new(self.columns, self.rows); // Cambia filas y columnas
+        let mut transposed = DenseMatrix::new(self.columns, self.rows); // Swap rows and columns
         for row in 0..self.rows {
             for col in 0..self.columns {
                 let value = self.get(row, col);
-                transposed.set(col, row, *value); // Intercambia las posiciones fila y columna
+                transposed.set(col, row, *value); // Swap row and column positions
             }
         }
         transposed
     }
 }
 
-
-
-
-
 impl DenseMatrix<f64> {
-    /// Realiza la multiplicación de matrices densa * densa.
+    /// Performs dense * dense matrix multiplication.
     pub fn matmul(&self, other: &DenseMatrix<f64>) -> DenseMatrix<f64> {
         assert_eq!(
             self.columns, other.rows,
-            "El número de columnas de la primera matriz debe coincidir con el número de filas de la segunda matriz"
+            "The number of columns of the first matrix must match the number of rows of the second matrix"
         );
 
-        // Crear una nueva matriz para almacenar el resultado.
+        // Create a new matrix to store the result.
         let mut result = DenseMatrix::new(self.rows, other.columns);
 
         for i in 0..self.rows {
@@ -277,14 +250,12 @@ impl DenseMatrix<f64> {
     }
 }
 
-
-
 impl DenseMatrix<f64> {
-    /// Realiza sustitución hacia adelante para resolver Lx = b.
-    /// La matriz L debe ser triangular inferior.
+    /// Performs forward substitution to solve Lx = b.
+    /// The matrix L must be lower triangular.
     pub fn forward_substitution(&self, b: &DenseMatrix<f64>) -> DenseMatrix<f64> {
-        assert_eq!(self.rows, self.columns, "La matriz debe ser cuadrada");
-        assert_eq!(self.rows, b.data.len(), "La longitud de b debe coincidir con las filas de la matriz");
+        assert_eq!(self.rows, self.columns, "The matrix must be square");
+        assert_eq!(self.rows, b.data.len(), "The length of b must match the rows of the matrix");
 
         let mut x = vec![0.0; self.rows];
 
@@ -295,7 +266,7 @@ impl DenseMatrix<f64> {
             }
             let value = b.data[i] - sum;
             let diag = self.get(i, i);
-            assert_ne!(*diag, 0.0, "El elemento diagonal no puede ser cero");
+            assert_ne!(*diag, 0.0, "The diagonal element cannot be zero");
             x[i] = value / diag;
         }
 
@@ -307,14 +278,12 @@ impl DenseMatrix<f64> {
     }
 }
 
-
-
 impl DenseMatrix<f64> {
-    /// Realiza sustitución hacia atrás para resolver Ux = b.
-    /// La matriz U debe ser triangular superior.
+    /// Performs backward substitution to solve Ux = b.
+    /// The matrix U must be upper triangular.
     pub fn backward_substitution(&self, b: &Vec<f64>) -> Vec<f64> {
-        assert_eq!(self.rows, self.columns, "La matriz debe ser cuadrada");
-        assert_eq!(self.rows, b.len(), "La longitud de b debe coincidir con las filas de la matriz");
+        assert_eq!(self.rows, self.columns, "The matrix must be square");
+        assert_eq!(self.rows, b.len(), "The length of b must match the rows of the matrix");
 
         let mut x = vec![0.0; self.rows];
 
@@ -325,7 +294,7 @@ impl DenseMatrix<f64> {
             }
             let value = b[i] - sum;
             let diag = self.get(i, i);
-            assert_ne!(*diag, 0.0, "El elemento diagonal no puede ser cero");
+            assert_ne!(*diag, 0.0, "The diagonal element cannot be zero");
             x[i] = value / diag;
         }
 
@@ -333,27 +302,24 @@ impl DenseMatrix<f64> {
     }
 }
 
-
-
-
 impl DenseMatrix<f64> {
-    // Calcula la norma máxima entre dos vectores.
+    // Calculates the maximum norm between two vectors.
     pub fn max_norm(&self, other: &DenseMatrix<f64>) -> f64 {
-        assert_eq!(self.rows, other.rows, "El tamaño del vector debe coincidir con las filas de la matriz");
-
-        // Calculamos el valor absoluto del valor más grande entre los elementos de los dos vectores
-        other.data.iter().map(|&x| x.abs()).max_by(|a, b| a.partial_cmp(b).unwrap()).unwrap_or(0.0)
+        self.data
+            .iter()
+            .zip(other.data.iter())
+            .map(|(a, b)| (a - b).abs())
+            .max_by(|a, b| a.partial_cmp(b).unwrap())
+            .unwrap_or(0.0)
     }
 
-    // Calcula la norma euclidiana entre dos vectores.
+    // Calculates the Euclidean norm between two vectors.
     pub fn euclidean_norm(&self, other: &DenseMatrix<f64>) -> f64 {
-        assert_eq!(self.rows, other.rows, "El tamaño del vector debe coincidir con las filas de la matriz");
-
-        // Sumamos los cuadrados de los elementos y sacamos la raíz cuadrada del resultado
-        let sum_of_squares: f64 = other.data.iter().map(|&x| x * x).sum();
-        sum_of_squares.sqrt()
+        self.data
+            .iter()
+            .zip(other.data.iter())
+            .map(|(a, b)| (a - b).powi(2))
+            .sum::<f64>()
+            .sqrt()
     }
 }
-
-
-

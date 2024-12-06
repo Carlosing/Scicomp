@@ -17,52 +17,39 @@ fn main() {
 
     
 
-    let zero_vector = vec![1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1];
 
-    let one_vector = vec![0, 1, 1, 2, 0, 1, 2, 3, 1, 2, 3, 2];
+    let mut matrix = convert_file_csr(lines);
 
-    let two_vector = vec![0, 2, 4, 6, 8];
+    let matrix = matrix.to_dense();
 
-    let matriz1 = Matrix {
-        rows: 4,
-        columns: 4,
-        nnz: 11,
-        values: zero_vector,
-        col_indices: one_vector,
-        row_ptr: two_vector.clone(),
-    };
+    let matrix_conj = matrix.transpose_conjugate();
 
-    let matriz2 = convert_file_csr(lines);
+    let B = matrix.matmul(&matrix_conj);
 
-    let matriz3 = matriz2.to_dense();
+    let L = B.cholesky().expect("Problem with decomp");
 
-    let conj = matriz3.transpose_conjugate();
+    let L_T = L.transpose_conjugate();
 
-    let prod = conj.matmul(&matriz3);
+    let decomp_prod = L.matmul(&L_T);
 
-    println!("{:?}", matriz3.data);
+    let b = DenseMatrix{
+        rows:decomp_prod.rows,
+        columns: 1,
+        data: vec![size.parse::<f64>().unwrap(); decomp_prod.rows],};
 
-    println!("{:?}", prod.data);
+    let x = decomp_prod.forward_substitution(&b);
 
-    let b = vec![size.parse().unwrap(); prod.rows];
+    let error = B.matmul(&x);
 
-    let forw = prod.forward_substitution(&b);
-
-    println!("{:?}", forw);
-
-    let triang = matriz3.cholesky();
-
-    let solut = triang.expect("Sabe").backward_substitution(&b);
-
-    println!("{:?}", solut);
-
-    let m_norm = matriz3.max_norm(&b);
+    let m_norm = error.max_norm(&b);
 
     println!("{}", m_norm);
 
-    let eu_norm = matriz3.euclidean_norm(&b);
+    let eu_norm = error.euclidean_norm(&b);
 
     println!("{}", eu_norm);
+
+    println!("{:?}", b.data);
 
     
 
@@ -295,9 +282,9 @@ impl DenseMatrix<f64> {
 impl DenseMatrix<f64> {
     /// Realiza sustitución hacia adelante para resolver Lx = b.
     /// La matriz L debe ser triangular inferior.
-    pub fn forward_substitution(&self, b: &Vec<f64>) -> Vec<f64> {
+    pub fn forward_substitution(&self, b: &DenseMatrix<f64>) -> DenseMatrix<f64> {
         assert_eq!(self.rows, self.columns, "La matriz debe ser cuadrada");
-        assert_eq!(self.rows, b.len(), "La longitud de b debe coincidir con las filas de la matriz");
+        assert_eq!(self.rows, b.data.len(), "La longitud de b debe coincidir con las filas de la matriz");
 
         let mut x = vec![0.0; self.rows];
 
@@ -306,13 +293,17 @@ impl DenseMatrix<f64> {
             for j in 0..i {
                 sum += self.get(i, j) * x[j];
             }
-            let value = b[i] - sum;
+            let value = b.data[i] - sum;
             let diag = self.get(i, i);
             assert_ne!(*diag, 0.0, "El elemento diagonal no puede ser cero");
             x[i] = value / diag;
         }
 
-        x
+        DenseMatrix {
+            rows: x.len(),
+            columns: 1,
+            data: x,
+        }
     }
 }
 
@@ -347,19 +338,19 @@ impl DenseMatrix<f64> {
 
 impl DenseMatrix<f64> {
     // Calcula la norma máxima entre dos vectores.
-    pub fn max_norm(&self, other: &Vec<f64>) -> f64 {
-        assert_eq!(self.rows, other.len(), "El tamaño del vector debe coincidir con las filas de la matriz");
+    pub fn max_norm(&self, other: &DenseMatrix<f64>) -> f64 {
+        assert_eq!(self.rows, other.rows, "El tamaño del vector debe coincidir con las filas de la matriz");
 
         // Calculamos el valor absoluto del valor más grande entre los elementos de los dos vectores
-        other.iter().map(|&x| x.abs()).max_by(|a, b| a.partial_cmp(b).unwrap()).unwrap_or(0.0)
+        other.data.iter().map(|&x| x.abs()).max_by(|a, b| a.partial_cmp(b).unwrap()).unwrap_or(0.0)
     }
 
     // Calcula la norma euclidiana entre dos vectores.
-    pub fn euclidean_norm(&self, other: &Vec<f64>) -> f64 {
-        assert_eq!(self.rows, other.len(), "El tamaño del vector debe coincidir con las filas de la matriz");
+    pub fn euclidean_norm(&self, other: &DenseMatrix<f64>) -> f64 {
+        assert_eq!(self.rows, other.rows, "El tamaño del vector debe coincidir con las filas de la matriz");
 
         // Sumamos los cuadrados de los elementos y sacamos la raíz cuadrada del resultado
-        let sum_of_squares: f64 = other.iter().map(|&x| x * x).sum();
+        let sum_of_squares: f64 = other.data.iter().map(|&x| x * x).sum();
         sum_of_squares.sqrt()
     }
 }

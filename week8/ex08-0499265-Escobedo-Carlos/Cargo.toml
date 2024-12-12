@@ -1,0 +1,6 @@
+[package]
+name = "ex08-0499265-Escobedo-Carlos"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]

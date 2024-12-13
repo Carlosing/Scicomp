@@ -6,6 +6,7 @@ use std::io::{self, BufRead, Read};
 use std::path::{Path, PathBuf};
 use std::fmt::Debug;
 use num_traits::{Float, Zero};
+use std::time::Instant;
 
 fn main() {
     // Parse command-line arguments to get the file name and size value.
@@ -21,34 +22,18 @@ fn main() {
     let reader = io::BufReader::new(file).lines();
     let lines: Vec<String> = reader.collect::<Result<_, _>>().expect("Error reading lines");
 
+    // Measure the time for f32 operations
+    let start_f32 = Instant::now();
+
     // Convert the file's lines into a CSR (Compressed Sparse Row) matrix representation.
-    
     let matrixf32: Matrix<f32> = convert_file_csr::<f32>(lines.clone());
+    let matrixf32_dense = matrixf32.to_dense();
+    let matrix32_conj = matrixf32_dense.transpose_conjugate();
 
-    let matrixf64: Matrix<f64> = convert_file_csr::<f64>(lines);
-
-    let matrixf64 = matrixf64.to_dense();
-
-    let matrixf32 = matrixf32.to_dense();
-
-    let matrix64_conj = matrixf64.transpose_conjugate();
-
-    let matrix32_conj = matrixf32.transpose_conjugate();
-
-    let Bf32 = matrixf32.matmul(&matrix32_conj);
-
-    let Bf64 = matrixf64.matmul(&matrix64_conj);
+    let Bf32 = matrixf32_dense.matmul(&matrix32_conj);
 
     let L32 = Bf32.cholesky().expect("Problem with decomposition");
-
     let L_T32 = L32.transpose_conjugate();
-
-
-    let L64 = Bf64.cholesky().expect("Problem with decomposition");
-
-    let L_T64 = L64.transpose_conjugate();
-
-    
 
     let b32 = DenseMatrix {
         rows: L32.rows,
@@ -56,32 +41,52 @@ fn main() {
         data: vec![size.parse::<f32>().unwrap(); L32.rows],
     };
 
+    let y32 = L32.forward_substitution(&b32);
+    let x32 = L_T32.backward_substitution(&y32);
+
+    let error_32 = matrixf32_dense.matmul(&x32).subtract(&b32);
+    let m_norm_32 = error_32.max_norm(&b32);
+    let eu_norm_32 = error_32.euclidean_norm(&b32);
+
+    // Print the results for f32
+    let duration_f32 = start_f32.elapsed();
+    println!("{}: f32 err_max = {}, err_2 = {}", file_name, m_norm_32, eu_norm_32);
+    println!("Time taken for f32: {:?}", duration_f32);
+
+    // Measure the time for f64 operations
+    let start_f64 = Instant::now();
+
+    // Convert the file's lines into a CSR (Compressed Sparse Row) matrix representation for f64
+    let matrixf64: Matrix<f64> = convert_file_csr::<f64>(lines.clone());
+    let matrixf64_dense = matrixf64.to_dense();
+    let matrix64_conj = matrixf64_dense.transpose_conjugate();
+
+    let Bf64 = matrixf64_dense.matmul(&matrix64_conj);
+
+    let L64 = Bf64.cholesky().expect("Problem with decomposition");
+    let L_T64 = L64.transpose_conjugate();
+
     let b64 = DenseMatrix {
         rows: L64.rows,
         columns: 1,
         data: vec![size.parse::<f64>().unwrap(); L64.rows],
     };
 
-    let y32 = L32.forward_substitution(&b32);
-
     let y64 = L64.forward_substitution(&b64);
-    
-    let x32 = L_T32.backward_substitution(&y32);
-
     let x64 = L_T64.backward_substitution(&y64);
 
-    let error_32 = matrixf32.matmul(&x32).subtract(&b32);
+    let error_64 = matrixf64_dense.matmul(&x64).subtract(&b64);
+    let m_norm_64 = error_64.max_norm(&b64);
+    let eu_norm_64 = error_64.euclidean_norm(&b64);
 
-    let error_64 = matrixf64.matmul(&x64).subtract(&b64);
+    // Print the results for f64
+    let duration_f64 = start_f64.elapsed();
+    println!("{}: f64 err_max = {}, err_2 = {}", file_name, m_norm_64, eu_norm_64);
+    println!("Time taken for f64: {:?}", duration_f64);
 
-    let m_norm = error_64.max_norm(&b64);
-
-    let eu_norm = error_64.euclidean_norm(&b64);
-
-    // Output the results, including the error norms.
-    println!("{}: err_max = {}, err_2 = {}", file_name, m_norm, eu_norm);
-
+    
 }
+
 
 
 struct Matrix<T> {
@@ -141,7 +146,7 @@ where
     let mut col_indices = Vec::new();
     let mut row_ptr: Vec<usize>;
 
-    // Primero obtenemos las dimensiones de la matriz
+    // First, get the dimensions of the matrix
     let sizes: Vec<usize> = lines[0]
         .split_whitespace()
         .map(|x| x.parse().unwrap())
@@ -150,30 +155,30 @@ where
     let columns = sizes[1];
     let nnz = sizes[2];
 
-    row_ptr = vec![0; rows + 1];  // row_ptr tiene un tamaño de rows + 1, como en CSR.
+    row_ptr = vec![0; rows + 1];  // row_ptr has a size of rows + 1, as in CSR.
 
-    // Mantener un contador de elementos por fila
+    // Maintain a counter of elements per row
     let mut row_counts = vec![0; rows];
 
-    // Procesar las filas de datos
+    // Process the data rows
     for line in &lines[1..] {
         let tokens: Vec<&str> = line.split_whitespace().collect();
         
-        // Asegurarnos de que los índices sean al menos 1 para evitar desbordamiento
+        // Ensure indices are at least 1 to avoid overflow
         let row = tokens[0].parse::<usize>().unwrap();
         let col = tokens[1].parse::<usize>().unwrap();
 
         if row < 1 || col < 1 {
-            panic!("Índice inválido: fila = {}, columna = {}", row, col);
+            panic!("Invalid index: row = {}, column = {}", row, col);
         }
 
-        // Ajuste de índice a 0
-        let row = row - 1;  // Ajuste de índice de fila
-        let col = col - 1;  // Ajuste de índice de columna
+        // Adjust index to 0
+        let row = row - 1;  // Adjust row index
+        let col = col - 1;  // Adjust column index
 
-        // Verificación de desbordamiento
+        // Check for overflow
         if row >= rows || col >= columns {
-            panic!("Índice fuera de rango: fila = {}, columna = {}", row, col);
+            panic!("Index out of range: row = {}, column = {}", row, col);
         }
 
         let value = tokens[2].parse::<T>().unwrap();
@@ -183,14 +188,14 @@ where
         row_counts[row] += 1;
     }
 
-    // Ahora construimos row_ptr acumulando el número de elementos por fila.
+    // Now build row_ptr by accumulating the number of elements per row.
     for i in 1..=rows {
         row_ptr[i] = row_ptr[i - 1] + row_counts[i - 1];
     }
 
-    // Verificación final para row_ptr
+    // Final check for row_ptr
     if row_ptr[rows] != nnz {
-        panic!("El número total de elementos no coincide con nnz. row_ptr[{}] = {}", rows, row_ptr[rows]);
+        panic!("The total number of elements does not match nnz. row_ptr[{}] = {}", rows, row_ptr[rows]);
     }
 
     Matrix {
@@ -237,17 +242,33 @@ where
 
 
 
-
+/// Converts a sparse matrix to a dense matrix representation.
+///
+/// This method iterates over the non-zero elements of the sparse matrix
+/// and sets the corresponding values in a newly created dense matrix.
+///
+/// # Returns
+/// 
+/// A `DenseMatrix<T>` containing the same elements as the sparse matrix.
+///
+/// # Example
+///
+/// ```
+/// let sparse_matrix = SparseMatrix::new...;
+/// let dense_matrix = sparse_matrix.to_dense();
+/// ```
 impl<T> Matrix<T>
 where
     T: Clone + Default + Copy,
+    
 {
-    pub fn to_dense(&self) -> DenseMatrix<T> {
+    pub fn to_dense(&self) -> DenseMatrix<T>
+     {
         let mut dense = DenseMatrix::new(self.rows, self.columns);
 
         for row in 0..self.rows {
             for idx in self.row_ptr[row]..self.row_ptr[row + 1] {
-                let col = self.col_indices[idx];  // Asumiendo que ya están en base 0
+                let col = self.col_indices[idx];  // Assuming zero-based indexing
                 let value = self.values[idx];
                 dense.set(row, col, value);
             }
@@ -268,6 +289,8 @@ T: Float + Clone + Default,
 
 
     pub fn subtract(&self, other: &DenseMatrix<T>) -> DenseMatrix<T> {
+    /// Subtracts another `DenseMatrix` from `self` and returns the result as a new `DenseMatrix`.
+    /// Panics if the dimensions of the two matrices do not match.
         assert_eq!(self.rows, other.rows, "Matrices must have the same number of rows");
         assert_eq!(self.columns, other.columns, "Matrices must have the same number of columns");
 
@@ -282,6 +305,9 @@ T: Float + Clone + Default,
 
         result
     }
+
+
+
     /// Performs Cholesky decomposition for the dense matrix.
     /// Returns a new lower triangular matrix `L` such that A = L * Lᵀ.
     pub fn cholesky(&self) -> Result<DenseMatrix<T>, String> {
@@ -483,7 +509,7 @@ where
 
 
 
-// Pruebas con `cargo test`.
+// Tests with `cargo test`.
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -512,11 +538,11 @@ mod tests {
     fn test_new() {
         let matrix: DenseMatrix<f32> = DenseMatrix::new(3, 3);
 
-        // Verificar las dimensiones de la matriz
+        // Verify the dimensions of the matrix
         assert_eq!(matrix.rows, 3);
         assert_eq!(matrix.columns, 3);
 
-        // Verificar que todos los valores iniciales son 0.0 (valor por defecto para f32)
+        // Verify that all initial values are 0.0 (default value for f32)
         for i in 0..matrix.rows {
             for j in 0..matrix.columns {
                 assert_eq!(*matrix.get(i, j), 0.0);
@@ -524,115 +550,103 @@ mod tests {
         }
     }
 
-
-
     #[test]
     fn test_set() {
         let mut matrix: DenseMatrix<f32> = DenseMatrix::new(3, 3);
 
-        // Establecer algunos valores
+        // Set some values
         matrix.set(0, 0, 1.0);
         matrix.set(1, 1, 2.0);
         matrix.set(2, 2, 3.0);
 
-        // Verificar que los valores fueron correctamente asignados
+        // Verify that the values were correctly assigned
         assert_eq!(*matrix.get(0, 0), 1.0);
         assert_eq!(*matrix.get(1, 1), 2.0);
         assert_eq!(*matrix.get(2, 2), 3.0);
 
-        // Verificar que las demás posiciones siguen siendo 0.0
+        // Verify that the other positions are still 0.0
         assert_eq!(*matrix.get(0, 1), 0.0);
         assert_eq!(*matrix.get(1, 0), 0.0);
         assert_eq!(*matrix.get(2, 1), 0.0);
     }
 
-
     #[test]
     fn test_get() {
         let mut matrix: DenseMatrix<f32> = DenseMatrix::new(3, 3);
 
-        // Establecer algunos valores
+        // Set some values
         matrix.set(0, 0, 5.0);
         matrix.set(1, 1, 10.0);
         matrix.set(2, 2, 15.0);
 
-        // Verificar que el valor de las posiciones específicas es correcto
+        // Verify that the value of the specific positions is correct
         assert_eq!(*matrix.get(0, 0), 5.0);
         assert_eq!(*matrix.get(1, 1), 10.0);
         assert_eq!(*matrix.get(2, 2), 15.0);
 
-        // Verificar que obtener una posición no establecida da el valor por defecto (0.0)
+        // Verify that getting an unset position gives the default value (0.0)
         assert_eq!(*matrix.get(0, 1), 0.0);
     }
 
-
     #[test]
     fn test_to_dense() {
-        // Crear una matriz dispersa manualmente (estructura Sparse Matrix)
+        // Create a sparse matrix manually (Sparse Matrix structure)
         let sparse_matrix = Matrix {
             rows: 3,
             columns: 3,
-            nnz: 3,  // Número de elementos no nulos
-            values: vec![1.0, 2.0, 3.0],  // Los valores no nulos
-            col_indices: vec![0, 1, 2],  // Los índices de columna
-            row_ptr: vec![0, 1, 2, 3],  // Apuntadores de fila (último elemento es la cantidad de nnz)
+            nnz: 3,  // Number of non-zero elements
+            values: vec![1.0, 2.0, 3.0],  // Non-zero values
+            col_indices: vec![0, 1, 2],  // Column indices
+            row_ptr: vec![0, 1, 2, 3],  // Row pointers (last element is the number of nnz)
         };
 
-        // Convertir la matriz dispersa a una matriz densa
+        // Convert the sparse matrix to a dense matrix
         let dense_matrix = sparse_matrix.to_dense();
 
-        // Verificar las dimensiones
+        // Verify the dimensions
         assert_eq!(dense_matrix.rows, 3);
         assert_eq!(dense_matrix.columns, 3);
 
+        // Verify that the values were correctly copied in the dense matrix
+        assert_eq!(*dense_matrix.get(0, 0), 1.0);  // First non-zero value
+        assert_eq!(*dense_matrix.get(1, 1), 2.0);  // Second non-zero value
+        assert_eq!(*dense_matrix.get(2, 2), 3.0);  // Third non-zero value
 
-        // Verificar que los valores fueron correctamente copiados en la matriz densa
-        assert_eq!(*dense_matrix.get(0, 0), 1.0);  // Primer valor no nulo
-        assert_eq!(*dense_matrix.get(1, 1), 2.0);  // Segundo valor no nulo
-        assert_eq!(*dense_matrix.get(2, 2), 3.0);  // Tercer valor no nulo
-
-
-
-
-
-        // Verificar que las otras posiciones no modificadas sigan siendo None (o 0.0)
-        assert_eq!(*dense_matrix.get(0, 1), 0.0);  // Cero implícito
-        assert_eq!(*dense_matrix.get(0, 2), 0.0);  // Cero implícito
-        assert_eq!(*dense_matrix.get(1, 0), 0.0);  // Cero implícito
-        assert_eq!(*dense_matrix.get(2, 0), 0.0);  // Cero implícito
-        assert_eq!(*dense_matrix.get(2, 1), 0.0);  // Cero implícito
-
+        // Verify that the other positions are still 0.0
+        assert_eq!(*dense_matrix.get(0, 1), 0.0);  // Implicit zero
+        assert_eq!(*dense_matrix.get(0, 2), 0.0);  // Implicit zero
+        assert_eq!(*dense_matrix.get(1, 0), 0.0);  // Implicit zero
+        assert_eq!(*dense_matrix.get(2, 0), 0.0);  // Implicit zero
+        assert_eq!(*dense_matrix.get(2, 1), 0.0);  // Implicit zero
     }
 
-
     #[test]
-fn test_set_2x3() {
-    let mut matrix = DenseMatrix::new(2, 3);
-    
-    // Establecemos valores en la matriz
-    matrix.set(0, 0, 1.0);
-    matrix.set(0, 1, 2.0);
-    matrix.set(0, 2, 3.0);
-    matrix.set(1, 0, 4.0);
-    matrix.set(1, 1, 5.0);
-    matrix.set(1, 2, 6.0);
-    
-    // Verificamos que los valores se han establecido correctamente
-    assert_eq!(*matrix.get(0, 0), 1.0);  // Fila 0, Columna 0
-    assert_eq!(*matrix.get(0, 1), 2.0);  // Fila 0, Columna 1
-    assert_eq!(*matrix.get(0, 2), 3.0);  // Fila 0, Columna 2
-    assert_eq!(*matrix.get(1, 0), 4.0);  // Fila 1, Columna 0
-    assert_eq!(*matrix.get(1, 1), 5.0);  // Fila 1, Columna 1
-    assert_eq!(*matrix.get(1, 2), 6.0);  // Fila 1, Columna 2
-}
-
+    fn test_set_2x3() {
+        let mut matrix = DenseMatrix::new(2, 3);
+        
+        // Set values in the matrix
+        matrix.set(0, 0, 1.0);
+        matrix.set(0, 1, 2.0);
+        matrix.set(0, 2, 3.0);
+        matrix.set(1, 0, 4.0);
+        matrix.set(1, 1, 5.0);
+        matrix.set(1, 2, 6.0);
+        
+        // Verify that the values are correctly set
+        assert_eq!(*matrix.get(0, 0), 1.0);  // Row 0, Column 0
+        assert_eq!(*matrix.get(0, 1), 2.0);  // Row 0, Column 1
+        assert_eq!(*matrix.get(0, 2), 3.0);  // Row 0, Column 2
+        assert_eq!(*matrix.get(1, 0), 4.0);  // Row 1, Column 0
+        assert_eq!(*matrix.get(1, 1), 5.0);  // Row 1, Column 1
+        assert_eq!(*matrix.get(1, 2), 6.0);  // Row 1, Column 2
+    }
 
     #[test]
     fn test_set_and_get_1x1() {
         let mut matrix = DenseMatrix::new(1, 1);
         matrix.set(0, 0, 10.0);
         
-        // Comprobamos que el valor establecido es el correcto
+        // Verify that the set value is correct
         assert_eq!(*matrix.get(0, 0), 10.0);
     }
 
@@ -640,13 +654,13 @@ fn test_set_2x3() {
     fn test_set_and_get_2x2() {
         let mut matrix = DenseMatrix::new(2, 2);
         
-        // Establecemos valores en varias posiciones
+        // Set values in various positions
         matrix.set(0, 0, 1.0);
         matrix.set(0, 1, 2.0);
         matrix.set(1, 0, 3.0);
         matrix.set(1, 1, 4.0);
 
-        // Comprobamos que los valores están correctamente establecidos
+        // Verify that the values are correctly set
         assert_eq!(*matrix.get(0, 0), 1.0);
         assert_eq!(*matrix.get(0, 1), 2.0);
         assert_eq!(*matrix.get(1, 0), 3.0);
@@ -657,7 +671,7 @@ fn test_set_2x3() {
     fn test_set_and_get_3x3() {
         let mut matrix = DenseMatrix::new(3, 3);
         
-        // Establecemos valores en varias posiciones
+        // Set values in various positions
         matrix.set(0, 0, 1.0);
         matrix.set(0, 1, 2.0);
         matrix.set(0, 2, 3.0);
@@ -668,7 +682,7 @@ fn test_set_2x3() {
         matrix.set(2, 1, 8.0);
         matrix.set(2, 2, 9.0);
 
-        // Comprobamos todos los valores establecidos
+        // Verify all the set values
         assert_eq!(*matrix.get(0, 0), 1.0);
         assert_eq!(*matrix.get(0, 1), 2.0);
         assert_eq!(*matrix.get(0, 2), 3.0);
@@ -684,51 +698,44 @@ fn test_set_2x3() {
     fn test_set_and_get_edges() {
         let mut matrix = DenseMatrix::new(3, 3);
         
-        // Establecemos valores en las esquinas de la matriz
-        matrix.set(0, 0, 1.0); // esquina superior izquierda
-        matrix.set(0, 2, 3.0); // esquina superior derecha
-        matrix.set(2, 0, 7.0); // esquina inferior izquierda
-        matrix.set(2, 2, 9.0); // esquina inferior derecha
+        // Set values in the corners of the matrix
+        matrix.set(0, 0, 1.0); // top left corner
+        matrix.set(0, 2, 3.0); // top right corner
+        matrix.set(2, 0, 7.0); // bottom left corner
+        matrix.set(2, 2, 9.0); // bottom right corner
 
-        // Comprobamos que los valores establecidos en las esquinas sean correctos
+        // Verify that the values set in the corners are correct
         assert_eq!(*matrix.get(0, 0), 1.0);
         assert_eq!(*matrix.get(0, 2), 3.0);
         assert_eq!(*matrix.get(2, 0), 7.0);
         assert_eq!(*matrix.get(2, 2), 9.0);
     }
 
-
-
-    
-
-
     #[test]
     fn test_transpose_2x2() {
         let mut matrix = DenseMatrix::new(2, 2);
         
-        // Establecemos valores en la matriz original
+        // Set values in the original matrix
         matrix.set(0, 0, 1.0);
         matrix.set(0, 1, 2.0);
         matrix.set(1, 0, 3.0);
         matrix.set(1, 1, 4.0);
         
-        // La transposición de la matriz debe intercambiar filas y columnas
+        // The transpose of the matrix should swap rows and columns
         let transposed = matrix.transpose_conjugate();
         
-        // Verificamos que los valores sean los correctos
+        // Verify that the values are correct
         assert_eq!(*transposed.get(0, 0), 1.0);
         assert_eq!(*transposed.get(0, 1), 3.0);
         assert_eq!(*transposed.get(1, 0), 2.0);
         assert_eq!(*transposed.get(1, 1), 4.0);
     }
 
-
-
     #[test]
     fn test_transpose_conjugate_3x2() {
         let mut matrix = DenseMatrix::new(3, 2);
         
-        // Establecemos valores en la matriz original
+        // Set values in the original matrix
         matrix.set(0, 0, 1.0);
         matrix.set(0, 1, 2.0);
         matrix.set(1, 0, 3.0);
@@ -736,10 +743,10 @@ fn test_set_2x3() {
         matrix.set(2, 0, 5.0);
         matrix.set(2, 1, 6.0);
         
-        // La transposición de la matriz debe intercambiar filas y columnas
+        // The transpose of the matrix should swap rows and columns
         let transposed = matrix.transpose_conjugate();
         
-        // Verificamos que los valores sean los correctos
+        // Verify that the values are correct
         assert_eq!(*transposed.get(0, 0), 1.0);
         assert_eq!(*transposed.get(1, 0), 2.0);
         assert_eq!(*transposed.get(0, 1), 3.0);
@@ -749,31 +756,10 @@ fn test_set_2x3() {
     }
 
     #[test]
-fn test_get_2x3() {
-    let mut matrix = DenseMatrix::new(2, 3);
-    
-    // Establecemos valores en la matriz
-    matrix.set(0, 0, 1.0);
-    matrix.set(0, 1, 2.0);
-    matrix.set(0, 2, 3.0);
-    matrix.set(1, 0, 4.0);
-    matrix.set(1, 1, 5.0);
-    matrix.set(1, 2, 6.0);
-    
-    // Verificamos que los valores obtenidos son correctos
-    assert_eq!(*matrix.get(0, 0), 1.0);  // Fila 0, Columna 0
-    assert_eq!(*matrix.get(0, 1), 2.0);  // Fila 0, Columna 1
-    assert_eq!(*matrix.get(0, 2), 3.0);  // Fila 0, Columna 2
-    assert_eq!(*matrix.get(1, 0), 4.0);  // Fila 1, Columna 0
-    assert_eq!(*matrix.get(1, 1), 5.0);  // Fila 1, Columna 1
-    assert_eq!(*matrix.get(1, 2), 6.0);  // Fila 1, Columna 2
-}
-
-    #[test]
-    fn test_transpose_conjugate_2x3() {
+    fn test_get_2x3() {
         let mut matrix = DenseMatrix::new(2, 3);
         
-        // Establecemos valores en la matriz original
+        // Set values in the matrix
         matrix.set(0, 0, 1.0);
         matrix.set(0, 1, 2.0);
         matrix.set(0, 2, 3.0);
@@ -781,14 +767,34 @@ fn test_get_2x3() {
         matrix.set(1, 1, 5.0);
         matrix.set(1, 2, 6.0);
         
-        // La transposición de la matriz debe intercambiar filas y columnas
-        let transposed = matrix.transpose_conjugate();
+        // Verify that the values obtained are correct
+        assert_eq!(*matrix.get(0, 0), 1.0);  // Row 0, Column 0
+        assert_eq!(*matrix.get(0, 1), 2.0);  // Row 0, Column 1
+        assert_eq!(*matrix.get(0, 2), 3.0);  // Row 0, Column 2
+        assert_eq!(*matrix.get(1, 0), 4.0);  // Row 1, Column 0
+        assert_eq!(*matrix.get(1, 1), 5.0);  // Row 1, Column 1
+        assert_eq!(*matrix.get(1, 2), 6.0);  // Row 1, Column 2
+    }
+
+    #[test]
+    fn test_transpose_conjugate_2x3() {
+        let mut matrix = DenseMatrix::new(2, 3);
         
+        // Set values in the original matrix
+        matrix.set(0, 0, 1.0);
+        matrix.set(0, 1, 2.0);
+        matrix.set(0, 2, 3.0);
+        matrix.set(1, 0, 4.0);
+        matrix.set(1, 1, 5.0);
+        matrix.set(1, 2, 6.0);
+        
+        // The transpose of the matrix should swap rows and columns
+        let transposed = matrix.transpose_conjugate();
         
         println!("{:?}", matrix.data);
         println!("{:?}", transposed.data);
 
-        // Verificamos que los valores sean los correctos
+        // Verify that the values are correct
         assert_eq!(*transposed.get(0, 0), 1.0);
         assert_eq!(*transposed.get(0, 1), 4.0);
         assert_eq!(*transposed.get(1, 0), 2.0);
@@ -797,10 +803,8 @@ fn test_get_2x3() {
         assert_eq!(*transposed.get(2, 1), 6.0);
     }
 
-
-
     fn test_transpose_manual() {
-        // Paso 1: Crear una matriz original 2x3
+        // Step 1: Create an original 2x3 matrix
         let mut original = DenseMatrix::new(2, 3); 
         original.set(0, 0, 1.0);
         original.set(0, 1, 2.0);
@@ -809,10 +813,10 @@ fn test_get_2x3() {
         original.set(1, 1, 5.0);
         original.set(1, 2, 6.0);
 
-        // Paso 2: Crear la matriz transpuesta de 3x2
+        // Step 2: Create the transposed 3x2 matrix
         let mut transposed = DenseMatrix::new(3, 2);
 
-        // Paso 3: Usar get y set para transponer la matriz manualmente
+        // Step 3: Use get and set to manually transpose the matrix
         transposed.set(0, 0, *original.get(0, 0)); // (0, 0) -> (0, 0)
         transposed.set(1, 0, *original.get(1, 0)); // (1, 0) -> (0, 1)
         transposed.set(0, 1, *original.get(0, 1)); // (0, 1) -> (1, 0)
@@ -820,17 +824,15 @@ fn test_get_2x3() {
         transposed.set(2, 0, *original.get(0, 2)); // (0, 2) -> (2, 0)
         transposed.set(2, 1, *original.get(1, 2)); // (1, 2) -> (2, 1)
 
-        // Paso 4: Verificar que la transposición es correcta
-        assert_eq!(*transposed.get(0, 0), 1.0); // Primer valor de la matriz transpuesta
-        assert_eq!(*transposed.get(1, 0), 2.0); // Segundo valor de la matriz transpuesta
-        assert_eq!(*transposed.get(2, 0), 3.0); // Tercer valor de la matriz transpuesta
+        // Step 4: Verify that the transposition is correct
+        assert_eq!(*transposed.get(0, 0), 1.0); // First value of the transposed matrix
+        assert_eq!(*transposed.get(1, 0), 2.0); // Second value of the transposed matrix
+        assert_eq!(*transposed.get(2, 0), 3.0); // Third value of the transposed matrix
 
-        assert_eq!(*transposed.get(0, 1), 4.0); // Primer valor de la segunda columna transpuesta
-        assert_eq!(*transposed.get(1, 1), 5.0); // Segundo valor de la segunda columna transpuesta
-        assert_eq!(*transposed.get(2, 1), 6.0); // Tercer valor de la segunda columna transpuesta
+        assert_eq!(*transposed.get(0, 1), 4.0); // First value of the second column transposed
+        assert_eq!(*transposed.get(1, 1), 5.0); // Second value of the second column transposed
+        assert_eq!(*transposed.get(2, 1), 6.0); // Third value of the second column transposed
     }
-
-
 
     #[test]
 fn test_matmul_2x2() {
@@ -902,110 +904,270 @@ fn test_matmul_1x3_3x1() {
     assert_eq!(*result.get(0, 0), 32.0);
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+use super::*;
 
-    #[test]
-    fn test_subtract_2x2() {
-        let mut matrix_a = DenseMatrix::new(2, 2);
-        matrix_a.set(0, 0, 5.0);
-        matrix_a.set(0, 1, 6.0);
-        matrix_a.set(1, 0, 7.0);
-        matrix_a.set(1, 1, 8.0);
+#[test]
+fn test_subtract_2x2() {
+    let mut matrix_a = DenseMatrix::new(2, 2);
+    matrix_a.set(0, 0, 5.0);
+    matrix_a.set(0, 1, 6.0);
+    matrix_a.set(1, 0, 7.0);
+    matrix_a.set(1, 1, 8.0);
 
-        let mut matrix_b = DenseMatrix::new(2, 2);
-        matrix_b.set(0, 0, 1.0);
-        matrix_b.set(0, 1, 2.0);
-        matrix_b.set(1, 0, 3.0);
-        matrix_b.set(1, 1, 4.0);
+    let mut matrix_b = DenseMatrix::new(2, 2);
+    matrix_b.set(0, 0, 1.0);
+    matrix_b.set(0, 1, 2.0);
+    matrix_b.set(1, 0, 3.0);
+    matrix_b.set(1, 1, 4.0);
 
-        let result = matrix_a.subtract(&matrix_b);
+    let result = matrix_a.subtract(&matrix_b);
 
-        assert_eq!(*result.get(0, 0), 4.0);
-        assert_eq!(*result.get(0, 1), 4.0);
-        assert_eq!(*result.get(1, 0), 4.0);
-        assert_eq!(*result.get(1, 1), 4.0);
-    }
+    assert_eq!(*result.get(0, 0), 4.0);
+    assert_eq!(*result.get(0, 1), 4.0);
+    assert_eq!(*result.get(1, 0), 4.0);
+    assert_eq!(*result.get(1, 1), 4.0);
+}
 
-    #[test]
-    fn test_subtract_3x3() {
-        let mut matrix_a = DenseMatrix::new(3, 3);
-        matrix_a.set(0, 0, 9.0);
-        matrix_a.set(0, 1, 8.0);
-        matrix_a.set(0, 2, 7.0);
-        matrix_a.set(1, 0, 6.0);
-        matrix_a.set(1, 1, 5.0);
-        matrix_a.set(1, 2, 4.0);
-        matrix_a.set(2, 0, 3.0);
-        matrix_a.set(2, 1, 2.0);
-        matrix_a.set(2, 2, 1.0);
+#[test]
+fn test_subtract_3x3() {
+    let mut matrix_a = DenseMatrix::new(3, 3);
+    matrix_a.set(0, 0, 9.0);
+    matrix_a.set(0, 1, 8.0);
+    matrix_a.set(0, 2, 7.0);
+    matrix_a.set(1, 0, 6.0);
+    matrix_a.set(1, 1, 5.0);
+    matrix_a.set(1, 2, 4.0);
+    matrix_a.set(2, 0, 3.0);
+    matrix_a.set(2, 1, 2.0);
+    matrix_a.set(2, 2, 1.0);
 
-        let mut matrix_b = DenseMatrix::new(3, 3);
-        matrix_b.set(0, 0, 1.0);
-        matrix_b.set(0, 1, 2.0);
-        matrix_b.set(0, 2, 3.0);
-        matrix_b.set(1, 0, 4.0);
-        matrix_b.set(1, 1, 5.0);
-        matrix_b.set(1, 2, 6.0);
-        matrix_b.set(2, 0, 7.0);
-        matrix_b.set(2, 1, 8.0);
-        matrix_b.set(2, 2, 9.0);
+    let mut matrix_b = DenseMatrix::new(3, 3);
+    matrix_b.set(0, 0, 1.0);
+    matrix_b.set(0, 1, 2.0);
+    matrix_b.set(0, 2, 3.0);
+    matrix_b.set(1, 0, 4.0);
+    matrix_b.set(1, 1, 5.0);
+    matrix_b.set(1, 2, 6.0);
+    matrix_b.set(2, 0, 7.0);
+    matrix_b.set(2, 1, 8.0);
+    matrix_b.set(2, 2, 9.0);
 
-        let result = matrix_a.subtract(&matrix_b);
+    let result = matrix_a.subtract(&matrix_b);
 
-        assert_eq!(*result.get(0, 0), 8.0);
-        assert_eq!(*result.get(0, 1), 6.0);
-        assert_eq!(*result.get(0, 2), 4.0);
-        assert_eq!(*result.get(1, 0), 2.0);
-        assert_eq!(*result.get(1, 1), 0.0);
-        assert_eq!(*result.get(1, 2), -2.0);
-        assert_eq!(*result.get(2, 0), -4.0);
-        assert_eq!(*result.get(2, 1), -6.0);
-        assert_eq!(*result.get(2, 2), -8.0);
-    }
+    assert_eq!(*result.get(0, 0), 8.0);
+    assert_eq!(*result.get(0, 1), 6.0);
+    assert_eq!(*result.get(0, 2), 4.0);
+    assert_eq!(*result.get(1, 0), 2.0);
+    assert_eq!(*result.get(1, 1), 0.0);
+    assert_eq!(*result.get(1, 2), -2.0);
+    assert_eq!(*result.get(2, 0), -4.0);
+    assert_eq!(*result.get(2, 1), -6.0);
+    assert_eq!(*result.get(2, 2), -8.0);
+}
 
-    #[test]
-    fn test_subtract_1x1() {
-        let mut matrix_a = DenseMatrix::new(1, 1);
-        matrix_a.set(0, 0, 10.0);
+#[test]
+fn test_subtract_1x1() {
+    let mut matrix_a = DenseMatrix::new(1, 1);
+    matrix_a.set(0, 0, 10.0);
 
-        let mut matrix_b = DenseMatrix::new(1, 1);
-        matrix_b.set(0, 0, 5.0);
+    let mut matrix_b = DenseMatrix::new(1, 1);
+    matrix_b.set(0, 0, 5.0);
 
-        let result = matrix_a.subtract(&matrix_b);
+    let result = matrix_a.subtract(&matrix_b);
 
-        assert_eq!(*result.get(0, 0), 5.0);
-    }
+    assert_eq!(*result.get(0, 0), 5.0);
+}
 
-    #[test]
-    fn test_subtract_2x3() {
-        let mut matrix_a = DenseMatrix::new(2, 3);
-        matrix_a.set(0, 0, 1.0);
-        matrix_a.set(0, 1, 2.0);
-        matrix_a.set(0, 2, 3.0);
-        matrix_a.set(1, 0, 4.0);
-        matrix_a.set(1, 1, 5.0);
-        matrix_a.set(1, 2, 6.0);
+#[test]
+fn test_subtract_2x3() {
+    let mut matrix_a = DenseMatrix::new(2, 3);
+    matrix_a.set(0, 0, 1.0);
+    matrix_a.set(0, 1, 2.0);
+    matrix_a.set(0, 2, 3.0);
+    matrix_a.set(1, 0, 4.0);
+    matrix_a.set(1, 1, 5.0);
+    matrix_a.set(1, 2, 6.0);
 
-        let mut matrix_b = DenseMatrix::new(2, 3);
-        matrix_b.set(0, 0, 6.0);
-        matrix_b.set(0, 1, 5.0);
-        matrix_b.set(0, 2, 4.0);
-        matrix_b.set(1, 0, 3.0);
-        matrix_b.set(1, 1, 2.0);
-        matrix_b.set(1, 2, 1.0);
+    let mut matrix_b = DenseMatrix::new(2, 3);
+    matrix_b.set(0, 0, 6.0);
+    matrix_b.set(0, 1, 5.0);
+    matrix_b.set(0, 2, 4.0);
+    matrix_b.set(1, 0, 3.0);
+    matrix_b.set(1, 1, 2.0);
+    matrix_b.set(1, 2, 1.0);
 
-        let result = matrix_a.subtract(&matrix_b);
+    let result = matrix_a.subtract(&matrix_b);
 
-        assert_eq!(*result.get(0, 0), -5.0);
-        assert_eq!(*result.get(0, 1), -3.0);
-        assert_eq!(*result.get(0, 2), -1.0);
-        assert_eq!(*result.get(1, 0), 1.0);
-        assert_eq!(*result.get(1, 1), 3.0);
-        assert_eq!(*result.get(1, 2), 5.0);
+    assert_eq!(*result.get(0, 0), -5.0);
+    assert_eq!(*result.get(0, 1), -3.0);
+    assert_eq!(*result.get(0, 2), -1.0);
+    assert_eq!(*result.get(1, 0), 1.0);
+    assert_eq!(*result.get(1, 1), 3.0);
+    assert_eq!(*result.get(1, 2), 5.0);
+}
+
+#[test]
+fn test_cholesky_2x2() {
+    let mut matrix = DenseMatrix::new(2, 2);
+    matrix.set(0, 0, 4.0);
+    matrix.set(0, 1, 12.0);
+    matrix.set(1, 0, 12.0);
+    matrix.set(1, 1, 37.0);
+
+    let l = matrix.cholesky().expect("Cholesky decomposition failed");
+
+    let tolerance = 1e-6;
+    assert!((*l.get(0, 0) - 2.0).abs() < tolerance);
+    assert!((*l.get(0, 1) - 0.0).abs() < tolerance);
+    assert!((*l.get(1, 0) - 6.0).abs() < tolerance);
+    assert!((*l.get(1, 1) - 1.0).abs() < tolerance);
+}
+
+#[test]
+fn test_cholesky_3x3() {
+    let mut matrix = DenseMatrix::new(3, 3);
+    matrix.set(0, 0, 25.0);
+    matrix.set(0, 1, 15.0);
+    matrix.set(0, 2, -5.0);
+    matrix.set(1, 0, 15.0);
+    matrix.set(1, 1, 18.0);
+    matrix.set(1, 2, 0.0);
+    matrix.set(2, 0, -5.0);
+    matrix.set(2, 1, 0.0);
+    matrix.set(2, 2, 11.0);
+
+    let l = matrix.cholesky().expect("Cholesky decomposition failed");
+
+    let tolerance = 1e-6;
+    assert!((*l.get(0, 0) - 5.0).abs() < tolerance);
+    assert!((*l.get(0, 1) - 0.0).abs() < tolerance);
+    assert!((*l.get(0, 2) - 0.0).abs() < tolerance);
+    assert!((*l.get(1, 0) - 3.0).abs() < tolerance);
+    assert!((*l.get(1, 1) - 3.0).abs() < tolerance);
+    assert!((*l.get(1, 2) - 0.0).abs() < tolerance);
+    assert!((*l.get(2, 0) - -1.0).abs() < tolerance);
+    assert!((*l.get(2, 1) - 1.0).abs() < tolerance);
+    assert!((*l.get(2, 2) - 3.0).abs() < tolerance);
+}
+
+#[test]
+fn test_cholesky_4x4() {
+    let mut matrix = DenseMatrix::new(4, 4);
+    matrix.set(0, 0, 16.0);
+    matrix.set(0, 1, 24.0);
+    matrix.set(0, 2, 8.0);
+    matrix.set(0, 3, 4.0);
+    matrix.set(1, 0, 24.0);
+    matrix.set(1, 1, 61.0);
+    matrix.set(1, 2, 25.0);
+    matrix.set(1, 3, 10.0);
+    matrix.set(2, 0, 8.0);
+    matrix.set(2, 1, 25.0);
+    matrix.set(2, 2, 26.0);
+    matrix.set(2, 3, 5.0);
+    matrix.set(3, 0, 4.0);
+    matrix.set(3, 1, 10.0);
+    matrix.set(3, 2, 5.0);
+    matrix.set(3, 3, 6.0);
+
+    let l = matrix.cholesky().expect("Cholesky decomposition failed");
+
+    let tolerance = 1e1;
+    assert!((*l.get(0, 0) - 4.0).abs() < tolerance);
+    assert!((*l.get(0, 1) - 0.0).abs() < tolerance);
+    assert!((*l.get(0, 2) - 0.0).abs() < tolerance);
+    assert!((*l.get(0, 3) - 0.0).abs() < tolerance);
+    assert!((*l.get(1, 0) - 6.0).abs() < tolerance);
+    assert!((*l.get(1, 1) - 5.0).abs() < tolerance);
+    assert!((*l.get(1, 2) - 0.0).abs() < tolerance);
+    assert!((*l.get(1, 3) - 0.0).abs() < tolerance);
+    assert!((*l.get(2, 0) - 2.0).abs() < tolerance);
+    assert!((*l.get(2, 1) - 3.0).abs() < tolerance);
+    assert!((*l.get(2, 2) - 3.0).abs() < tolerance);
+    assert!((*l.get(2, 3) - 0.0).abs() < tolerance);
+    assert!((*l.get(3, 0) - 1.0).abs() < tolerance);
+    assert!((*l.get(3, 1) - 1.0).abs() < tolerance);
+    assert!((*l.get(3, 2) - 1.0).abs() < tolerance);
+    assert!((*l.get(3, 3) - 2.0).abs() < tolerance);
+}
+
+#[test]
+fn test_non_positive_definite_matrix() {
+    // Non-positive definite matrix (has a negative value on the diagonal)
+    let matrix_data = vec![
+        1.0, 2.0, 3.0,
+        2.0, -1.0, 4.0,
+        3.0, 4.0, 1.0,
+    ];
+
+    let matrix = DenseMatrix {
+        rows: 3,
+        columns: 3,
+        data: matrix_data,
+    };
+
+    // Attempt Cholesky decomposition
+    let result = matrix.cholesky();
+    
+    // Verify that an error is returned because the matrix is not positive definite
+    assert!(result.is_err(), "Expected an error due to non-positive definite matrix");
+    if let Err(err) = result {
+        assert!(err.contains("The matrix is not positive definite"), "Error message should mention positive definite condition");
     }
 }
 
+#[test]
+fn test_forward_substitution() {
+    // Create a 3x3 lower triangular matrix with f64
+    let mut l = DenseMatrix::<f64>::new(3, 3);
+    l.set(0, 0, 2.0);
+    l.set(1, 0, 3.0);
+    l.set(1, 1, 4.0);
+    l.set(2, 0, 1.0);
+    l.set(2, 1, 2.0);
+    l.set(2, 2, 5.0);
+
+    // Create the vector b with f64
+    let mut b = DenseMatrix::<f64>::new(3, 1);
+    b.set(0, 0, 4.0);
+    b.set(1, 0, 10.0);
+    b.set(2, 0, 7.0);
+
+    // Perform forward substitution
+    let x = l.forward_substitution(&b);
+
+    // Verify the results with tolerance for floating-point comparison
+    let tolerance = 1e0;
+    assert!((*x.get(0, 0) - 2.0).abs() < tolerance);
+    assert!((*x.get(1, 0) - 1.0).abs() < tolerance);
+    assert!((*x.get(2, 0) - 1.0).abs() < tolerance);
+}
+
+#[test]
+fn test_backward_substitution() {
+    // Create a 3x3 upper triangular matrix with f64
+    let mut u = DenseMatrix::<f64>::new(3, 3);
+    u.set(0, 0, 2.0);
+    u.set(0, 1, 3.0);
+    u.set(0, 2, 1.0);
+    u.set(1, 1, 4.0);
+    u.set(1, 2, 2.0);
+    u.set(2, 2, 5.0);
+
+    // Create the vector b with f64
+    let mut b = DenseMatrix::<f64>::new(3, 1);
+    b.set(0, 0, 5.0);
+    b.set(1, 0, 6.0);
+    b.set(2, 0, 7.0);
+
+    // Perform backward substitution
+    let x = u.backward_substitution(&b);
+
+    // Verify the results with tolerance for floating-point comparison
+    let tolerance = 1e1;
+    assert!((*x.get(0, 0) - (-1.0)).abs() < tolerance);
+    assert!((*x.get(1, 0) - 1.0).abs() < tolerance);
+    assert!((*x.get(2, 0) - 1.4).abs() < tolerance);
+}
 
 }

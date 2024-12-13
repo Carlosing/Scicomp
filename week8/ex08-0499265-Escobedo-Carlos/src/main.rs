@@ -5,6 +5,7 @@ use std::fs::File;
 use std::io::{self, BufRead, Read};
 use std::path::{Path, PathBuf};
 use std::fmt::Debug;
+use num_traits::{Float, Zero};
 
 fn main() {
     // Parse command-line arguments to get the file name and size value.
@@ -24,10 +25,61 @@ fn main() {
     
     let matrixf32: Matrix<f32> = convert_file_csr::<f32>(lines.clone());
 
-    let matrix64: Matrix<f64> = convert_file_csr::<f64>(lines);
+    let matrixf64: Matrix<f64> = convert_file_csr::<f64>(lines);
 
-    let matrix64 = matrix64.to_dense();
+    let matrixf64 = matrixf64.to_dense();
+
+    let matrixf32 = matrixf32.to_dense();
+
+    let matrix64_conj = matrixf64.transpose_conjugate();
+
+    let matrix32_conj = matrixf32.transpose_conjugate();
+
+    let Bf32 = matrixf32.matmul(&matrix32_conj);
+
+    let Bf64 = matrixf64.matmul(&matrix64_conj);
+
+    let L32 = Bf32.cholesky().expect("Problem with decomposition");
+
+    let L_T32 = L32.transpose_conjugate();
+
+
+    let L64 = Bf64.cholesky().expect("Problem with decomposition");
+
+    let L_T64 = L64.transpose_conjugate();
+
     
+
+    let b32 = DenseMatrix {
+        rows: L32.rows,
+        columns: 1,
+        data: vec![size.parse::<f32>().unwrap(); L32.rows],
+    };
+
+    let b64 = DenseMatrix {
+        rows: L64.rows,
+        columns: 1,
+        data: vec![size.parse::<f64>().unwrap(); L64.rows],
+    };
+
+    let y32 = L32.forward_substitution(&b32);
+
+    let y64 = L64.forward_substitution(&b64);
+    
+    let x32 = L_T32.backward_substitution(&y32);
+
+    let x64 = L_T64.backward_substitution(&y64);
+
+    let error_32 = matrixf32.matmul(&x32).subtract(&b32);
+
+    let error_64 = matrixf64.matmul(&x64).subtract(&b64);
+
+    let m_norm = error_64.max_norm(&b64);
+
+    let eu_norm = error_64.euclidean_norm(&b64);
+
+    // Output the results, including the error norms.
+    println!("{}: err_max = {}, err_2 = {}", file_name, m_norm, eu_norm);
 
 }
 
@@ -170,3 +222,217 @@ where
     }
 }
 
+
+
+
+impl<T> DenseMatrix<T>
+where
+T: Float + Clone + Default,
+{
+
+
+    pub fn subtract(&self, other: &DenseMatrix<T>) -> DenseMatrix<T> {
+        assert_eq!(self.rows, other.rows, "Matrices must have the same number of rows");
+        assert_eq!(self.columns, other.columns, "Matrices must have the same number of columns");
+
+        let mut result = DenseMatrix::new(self.rows, self.columns);
+
+        for i in 0..self.rows {
+            for j in 0..self.columns {
+                let value = *self.get(i, j) - *other.get(i, j);
+                result.set(i, j, value);
+            }
+        }
+
+        result
+    }
+    /// Performs Cholesky decomposition for the dense matrix.
+    /// Returns a new lower triangular matrix `L` such that A = L * Lᵀ.
+    pub fn cholesky(&self) -> Result<DenseMatrix<T>, String> {
+        if self.rows != self.columns {
+            return Err("The matrix must be square to perform Cholesky decomposition".to_string());
+        }
+
+        let n = self.rows;
+        let mut l = DenseMatrix::new(n, n);
+
+        for i in 0..n {
+            for j in 0..=i {
+                let mut sum = T::zero();
+
+                for k in 0..j {
+                    sum = sum + *l.get(i, k) * *l.get(j, k);
+                }
+
+                if i == j {
+                    let value = *self.get(i, i) - sum;
+                    if value <= T::zero() {
+                        return Err(format!(
+                            "The matrix is not positive definite. Found a negative or zero value on the diagonal at position ({}, {})",
+                            i, i
+                        ));
+                    }
+                    l.set(i, j, value.sqrt());
+                } else {
+                    let value = (*self.get(i, j) - sum) / *l.get(j, j);
+                    l.set(i, j, value);
+                }
+            }
+        }
+
+        Ok(l)
+    }
+}
+
+
+
+impl<T> DenseMatrix<T>
+where
+T: Float + Clone + Default,
+{
+    /// Returns the transpose of the matrix (conjugate for complex numbers).
+    pub fn transpose_conjugate(&self) -> DenseMatrix<T> {
+        let mut transposed = DenseMatrix::new(self.columns, self.rows); // Swap rows and columns
+        for row in 0..self.rows {
+            for col in 0..self.columns {
+                let value = self.get(row, col);
+                transposed.set(col, row, *value); // Swap row and column positions
+            }
+        }
+        transposed
+    }
+}
+
+
+
+impl<T> DenseMatrix<T>
+where
+T: Float + Clone + Default + std::ops::Add<Output = T> + std::ops::Mul<Output = T>,
+{
+    /// Performs dense * dense matrix multiplication.
+    pub fn matmul(&self, other: &DenseMatrix<T>) -> DenseMatrix<T> {
+        assert_eq!(
+            self.columns, other.rows,
+            "The number of columns of the first matrix must match the number of rows of the second matrix"
+        );
+
+        // Create a new matrix to store the result.
+        let mut result = DenseMatrix::new(self.rows, other.columns);
+
+        for i in 0..self.rows {
+            for j in 0..other.columns {
+                let mut sum = T::zero();
+                for k in 0..self.columns {
+                    sum = sum + (*self.get(i, k) * *other.get(k, j));
+                }
+                result.set(i, j, sum);
+            }
+        }
+
+        result
+    }
+}
+
+
+impl<T> DenseMatrix<T>
+where
+    T: Float + Clone + Default + Debug,
+{
+    /// Performs forward substitution to solve Lx = b.
+    /// The matrix L must be lower triangular.
+    pub fn forward_substitution(&self, b: &DenseMatrix<T>) -> DenseMatrix<T> {
+        assert_eq!(self.rows, self.columns, "The matrix must be square");
+        assert_eq!(b.columns, 1, "The input b must be a column vector");
+        assert_eq!(self.rows, b.rows, "The number of rows in L must match the size of b");
+
+        let mut x = vec![T::zero(); self.rows];
+
+        for i in 0..self.rows {
+            let mut sum = T::zero();
+            for j in 0..i {
+                sum = sum + *self.get(i, j) * x[j];
+            }
+            let value = *b.get(i, 0) - sum;
+            let diag = self.get(i, i);
+            assert_ne!(*diag, T::zero(), "The diagonal element cannot be zero");
+            x[i] = value / *diag;
+        }
+
+        DenseMatrix {
+            rows: x.len(),
+            columns: 1,
+            data: x,
+        }
+    }
+}
+
+
+
+
+
+impl<T> DenseMatrix<T>
+where
+    T: Float + Clone + Default + Debug + std::ops::AddAssign,
+{
+    /// Performs backward substitution to solve Ux = b.
+    /// The matrix U must be upper triangular.
+    pub fn backward_substitution(&self, b: &DenseMatrix<T>) -> DenseMatrix<T> {
+        assert_eq!(self.rows, self.columns, "The matrix must be square");
+        assert_eq!(self.rows, b.rows, "The length of b must match the rows of the matrix");
+
+        let mut x = vec![T::zero(); self.rows];
+
+        for i in (0..self.rows).rev() {
+            let mut sum = T::zero();
+            for j in (i + 1)..self.columns {
+                sum += *self.get(i, j) * x[j];
+            }
+            let value = *b.get(i, 0) - sum;
+            let diag = *self.get(i, i);
+            assert_ne!(diag,T::zero(), "The diagonal element cannot be zero");
+            x[i] = value / diag;
+        }
+
+        DenseMatrix {
+            rows: x.len(),
+            columns: 1,
+            data: x,
+        }
+    }
+}
+
+
+
+
+
+
+impl<T> DenseMatrix<T>
+where
+    T: Float + Zero + PartialOrd + std::iter::Sum,
+{
+    /// Calculates the maximum norm between two vectors.
+    pub fn max_norm(&self, other: &DenseMatrix<T>) -> T {
+        assert_eq!(self.rows, other.rows, "Matrices must have the same number of rows");
+        assert_eq!(self.columns, other.columns, "Matrices must have the same number of columns");
+
+        self.data
+            .iter()
+            .zip(other.data.iter())
+            .map(|(a, b)| (*a - *b).abs())
+            .max_by(|a, b| a.partial_cmp(b).unwrap())
+            .unwrap_or(T::zero())
+    }
+
+    /// Calculates the Euclidean norm between two vectors.
+    pub fn euclidean_norm(&self, other: &DenseMatrix<T>) -> T {
+        assert_eq!(self.rows, other.rows, "Matrices must have the same number of rows");
+        assert_eq!(self.columns, other.columns, "Matrices must have the same number of columns");
+
+        self.data
+            .iter()
+            .zip(other.data.iter())
+            .map(|(a, b)| (*a - *b).powi(2))
+            .sum::<T>()
+            .sqrt()
+    }
+}

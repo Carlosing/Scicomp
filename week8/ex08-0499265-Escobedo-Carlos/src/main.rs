@@ -132,32 +132,65 @@ impl FloatConvert for f64 {
 
 
 
-pub fn convert_file_csr<T>(lines: Vec<String>) -> Matrix<T>
+fn convert_file_csr<T>(lines: Vec<String>) -> Matrix<T>
 where
-    T: FloatConvert + Default + Clone,
+    T: std::str::FromStr + Default + Copy,
+    <T as std::str::FromStr>::Err: std::fmt::Debug,
 {
     let mut values = Vec::new();
     let mut col_indices = Vec::new();
+    let mut row_ptr: Vec<usize>;
 
-    let line1 = &lines[0];
-    let sizes: Vec<usize> = line1.split_whitespace().map(|x| x.parse().unwrap()).collect();
+    // Primero obtenemos las dimensiones de la matriz
+    let sizes: Vec<usize> = lines[0]
+        .split_whitespace()
+        .map(|x| x.parse().unwrap())
+        .collect();
     let rows = sizes[0];
     let columns = sizes[1];
     let nnz = sizes[2];
 
-    let mut row_ptr = vec![0; rows + 1];
-    let mut row_count = vec![0; rows];
+    row_ptr = vec![0; rows + 1];  // row_ptr tiene un tamaño de rows + 1, como en CSR.
 
-    for line in lines.iter() {
-        let entries: Vec<&str> = line.split_whitespace().collect();
-        values.push(T::from_f64(entries[2].parse::<f64>().expect("Error casting")));
-        let row: usize = entries[0].parse().expect("Error casting");
-        col_indices.push(entries[1].parse().expect("Error casting"));
-        row_count[row - 1] += 1;
+    // Mantener un contador de elementos por fila
+    let mut row_counts = vec![0; rows];
+
+    // Procesar las filas de datos
+    for line in &lines[1..] {
+        let tokens: Vec<&str> = line.split_whitespace().collect();
+        
+        // Asegurarnos de que los índices sean al menos 1 para evitar desbordamiento
+        let row = tokens[0].parse::<usize>().unwrap();
+        let col = tokens[1].parse::<usize>().unwrap();
+
+        if row < 1 || col < 1 {
+            panic!("Índice inválido: fila = {}, columna = {}", row, col);
+        }
+
+        // Ajuste de índice a 0
+        let row = row - 1;  // Ajuste de índice de fila
+        let col = col - 1;  // Ajuste de índice de columna
+
+        // Verificación de desbordamiento
+        if row >= rows || col >= columns {
+            panic!("Índice fuera de rango: fila = {}, columna = {}", row, col);
+        }
+
+        let value = tokens[2].parse::<T>().unwrap();
+
+        values.push(value);
+        col_indices.push(col);
+        row_counts[row] += 1;
     }
 
+    // Ahora construimos row_ptr acumulando el número de elementos por fila.
     for i in 1..=rows {
-        row_ptr[i] = row_count[i - 1] + row_ptr[i - 1];
+        row_ptr[i] = row_ptr[i - 1] + row_counts[i - 1];
+    }
+
+    // Verificación final para row_ptr
+    if row_ptr[rows] != nnz {
+        panic!("El número total de elementos no coincide con nnz. row_ptr[{}] = {}", rows, row_ptr[rows]);
     }
 
     Matrix {
@@ -169,6 +202,8 @@ where
         row_ptr,
     }
 }
+
+
 
 
 struct DenseMatrix<T> {
@@ -434,5 +469,34 @@ where
             .map(|(a, b)| (*a - *b).powi(2))
             .sum::<T>()
             .sqrt()
+    }
+}
+
+
+
+
+// Pruebas con `cargo test`.
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_convert_file_csr() {
+        let input = vec![
+            String::from("4 4 4"),
+            String::from("1 1 1.0"),
+            String::from("2 2 2.0"),
+            String::from("3 3 3.0"),
+            String::from("4 4 4.0"),
+        ];
+
+        let matrix: Matrix<f32> = convert_file_csr(input);
+
+        assert_eq!(matrix.rows, 4);
+        assert_eq!(matrix.columns, 4);
+        assert_eq!(matrix.nnz, 4);
+        assert_eq!(matrix.values, vec![1.0, 2.0, 3.0, 4.0]);
+        assert_eq!(matrix.col_indices, vec![0, 1, 2, 3]);
+        assert_eq!(matrix.row_ptr, vec![0, 1, 2, 3, 4]);
     }
 }

@@ -247,7 +247,7 @@ where
 
         for row in 0..self.rows {
             for idx in self.row_ptr[row]..self.row_ptr[row + 1] {
-                let col = self.col_indices[idx] - 1;
+                let col = self.col_indices[idx];  // Asumiendo que ya están en base 0
                 let value = self.values[idx];
                 dense.set(row, col, value);
             }
@@ -256,6 +256,7 @@ where
         dense
     }
 }
+
 
 
 
@@ -499,4 +500,104 @@ mod tests {
         assert_eq!(matrix.col_indices, vec![0, 1, 2, 3]);
         assert_eq!(matrix.row_ptr, vec![0, 1, 2, 3, 4]);
     }
+
+    #[test]
+    fn test_new() {
+        let matrix: DenseMatrix<f32> = DenseMatrix::new(3, 3);
+
+        // Verificar las dimensiones de la matriz
+        assert_eq!(matrix.rows, 3);
+        assert_eq!(matrix.columns, 3);
+
+        // Verificar que todos los valores iniciales son 0.0 (valor por defecto para f32)
+        for i in 0..matrix.rows {
+            for j in 0..matrix.columns {
+                assert_eq!(*matrix.get(i, j), 0.0);
+            }
+        }
+    }
+
+
+
+    #[test]
+    fn test_set() {
+        let mut matrix: DenseMatrix<f32> = DenseMatrix::new(3, 3);
+
+        // Establecer algunos valores
+        matrix.set(0, 0, 1.0);
+        matrix.set(1, 1, 2.0);
+        matrix.set(2, 2, 3.0);
+
+        // Verificar que los valores fueron correctamente asignados
+        assert_eq!(*matrix.get(0, 0), 1.0);
+        assert_eq!(*matrix.get(1, 1), 2.0);
+        assert_eq!(*matrix.get(2, 2), 3.0);
+
+        // Verificar que las demás posiciones siguen siendo 0.0
+        assert_eq!(*matrix.get(0, 1), 0.0);
+        assert_eq!(*matrix.get(1, 0), 0.0);
+        assert_eq!(*matrix.get(2, 1), 0.0);
+    }
+
+
+    #[test]
+    fn test_get() {
+        let mut matrix: DenseMatrix<f32> = DenseMatrix::new(3, 3);
+
+        // Establecer algunos valores
+        matrix.set(0, 0, 5.0);
+        matrix.set(1, 1, 10.0);
+        matrix.set(2, 2, 15.0);
+
+        // Verificar que el valor de las posiciones específicas es correcto
+        assert_eq!(*matrix.get(0, 0), 5.0);
+        assert_eq!(*matrix.get(1, 1), 10.0);
+        assert_eq!(*matrix.get(2, 2), 15.0);
+
+        // Verificar que obtener una posición no establecida da el valor por defecto (0.0)
+        assert_eq!(*matrix.get(0, 1), 0.0);
+    }
+
+
+    #[test]
+    fn test_to_dense() {
+        // Crear una matriz dispersa manualmente (estructura Sparse Matrix)
+        let sparse_matrix = Matrix {
+            rows: 3,
+            columns: 3,
+            nnz: 3,  // Número de elementos no nulos
+            values: vec![1.0, 2.0, 3.0],  // Los valores no nulos
+            col_indices: vec![0, 1, 2],  // Los índices de columna
+            row_ptr: vec![0, 1, 2, 3],  // Apuntadores de fila (último elemento es la cantidad de nnz)
+        };
+
+        // Convertir la matriz dispersa a una matriz densa
+        let dense_matrix = sparse_matrix.to_dense();
+
+        // Verificar las dimensiones
+        assert_eq!(dense_matrix.rows, 3);
+        assert_eq!(dense_matrix.columns, 3);
+
+
+        // Verificar que los valores fueron correctamente copiados en la matriz densa
+        assert_eq!(*dense_matrix.get(0, 0), 1.0);  // Primer valor no nulo
+        assert_eq!(*dense_matrix.get(1, 1), 2.0);  // Segundo valor no nulo
+        assert_eq!(*dense_matrix.get(2, 2), 3.0);  // Tercer valor no nulo
+
+
+
+
+
+        // Verificar que las otras posiciones no modificadas sigan siendo None (o 0.0)
+        assert_eq!(*dense_matrix.get(0, 1), 0.0);  // Cero implícito
+        assert_eq!(*dense_matrix.get(0, 2), 0.0);  // Cero implícito
+        assert_eq!(*dense_matrix.get(1, 0), 0.0);  // Cero implícito
+        assert_eq!(*dense_matrix.get(2, 0), 0.0);  // Cero implícito
+        assert_eq!(*dense_matrix.get(2, 1), 0.0);  // Cero implícito
+
+    }
+
+
+
+
 }

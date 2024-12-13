@@ -324,17 +324,24 @@ T: Float + Clone + Default,
 
 impl<T> DenseMatrix<T>
 where
-T: Float + Clone + Default,
+    T: Float + Clone + Default,
 {
     /// Returns the transpose of the matrix (conjugate for complex numbers).
     pub fn transpose_conjugate(&self) -> DenseMatrix<T> {
-        let mut transposed = DenseMatrix::new(self.columns, self.rows); // Swap rows and columns
+        // Creamos una nueva matriz para la transposición
+        let mut transposed = DenseMatrix::new(self.columns, self.rows); // Invertimos filas y columnas
+        
+        // Recorremos la matriz original y asignamos los valores en la transpuesta
         for row in 0..self.rows {
             for col in 0..self.columns {
+                // Obtenemos el valor de la matriz original
                 let value = self.get(row, col);
-                transposed.set(col, row, *value); // Swap row and column positions
+                
+                // Colocamos el valor en la posición transpuesta
+                transposed.set(col, row, *value); // Intercambiamos las posiciones
             }
         }
+        
         transposed
     }
 }
@@ -598,6 +605,407 @@ mod tests {
     }
 
 
+    #[test]
+fn test_set_2x3() {
+    let mut matrix = DenseMatrix::new(2, 3);
+    
+    // Establecemos valores en la matriz
+    matrix.set(0, 0, 1.0);
+    matrix.set(0, 1, 2.0);
+    matrix.set(0, 2, 3.0);
+    matrix.set(1, 0, 4.0);
+    matrix.set(1, 1, 5.0);
+    matrix.set(1, 2, 6.0);
+    
+    // Verificamos que los valores se han establecido correctamente
+    assert_eq!(*matrix.get(0, 0), 1.0);  // Fila 0, Columna 0
+    assert_eq!(*matrix.get(0, 1), 2.0);  // Fila 0, Columna 1
+    assert_eq!(*matrix.get(0, 2), 3.0);  // Fila 0, Columna 2
+    assert_eq!(*matrix.get(1, 0), 4.0);  // Fila 1, Columna 0
+    assert_eq!(*matrix.get(1, 1), 5.0);  // Fila 1, Columna 1
+    assert_eq!(*matrix.get(1, 2), 6.0);  // Fila 1, Columna 2
+}
+
+
+    #[test]
+    fn test_set_and_get_1x1() {
+        let mut matrix = DenseMatrix::new(1, 1);
+        matrix.set(0, 0, 10.0);
+        
+        // Comprobamos que el valor establecido es el correcto
+        assert_eq!(*matrix.get(0, 0), 10.0);
+    }
+
+    #[test]
+    fn test_set_and_get_2x2() {
+        let mut matrix = DenseMatrix::new(2, 2);
+        
+        // Establecemos valores en varias posiciones
+        matrix.set(0, 0, 1.0);
+        matrix.set(0, 1, 2.0);
+        matrix.set(1, 0, 3.0);
+        matrix.set(1, 1, 4.0);
+
+        // Comprobamos que los valores están correctamente establecidos
+        assert_eq!(*matrix.get(0, 0), 1.0);
+        assert_eq!(*matrix.get(0, 1), 2.0);
+        assert_eq!(*matrix.get(1, 0), 3.0);
+        assert_eq!(*matrix.get(1, 1), 4.0);
+    }
+
+    #[test]
+    fn test_set_and_get_3x3() {
+        let mut matrix = DenseMatrix::new(3, 3);
+        
+        // Establecemos valores en varias posiciones
+        matrix.set(0, 0, 1.0);
+        matrix.set(0, 1, 2.0);
+        matrix.set(0, 2, 3.0);
+        matrix.set(1, 0, 4.0);
+        matrix.set(1, 1, 5.0);
+        matrix.set(1, 2, 6.0);
+        matrix.set(2, 0, 7.0);
+        matrix.set(2, 1, 8.0);
+        matrix.set(2, 2, 9.0);
+
+        // Comprobamos todos los valores establecidos
+        assert_eq!(*matrix.get(0, 0), 1.0);
+        assert_eq!(*matrix.get(0, 1), 2.0);
+        assert_eq!(*matrix.get(0, 2), 3.0);
+        assert_eq!(*matrix.get(1, 0), 4.0);
+        assert_eq!(*matrix.get(1, 1), 5.0);
+        assert_eq!(*matrix.get(1, 2), 6.0);
+        assert_eq!(*matrix.get(2, 0), 7.0);
+        assert_eq!(*matrix.get(2, 1), 8.0);
+        assert_eq!(*matrix.get(2, 2), 9.0);
+    }
+
+    #[test]
+    fn test_set_and_get_edges() {
+        let mut matrix = DenseMatrix::new(3, 3);
+        
+        // Establecemos valores en las esquinas de la matriz
+        matrix.set(0, 0, 1.0); // esquina superior izquierda
+        matrix.set(0, 2, 3.0); // esquina superior derecha
+        matrix.set(2, 0, 7.0); // esquina inferior izquierda
+        matrix.set(2, 2, 9.0); // esquina inferior derecha
+
+        // Comprobamos que los valores establecidos en las esquinas sean correctos
+        assert_eq!(*matrix.get(0, 0), 1.0);
+        assert_eq!(*matrix.get(0, 2), 3.0);
+        assert_eq!(*matrix.get(2, 0), 7.0);
+        assert_eq!(*matrix.get(2, 2), 9.0);
+    }
+
+
+
+    
+
+
+    #[test]
+    fn test_transpose_2x2() {
+        let mut matrix = DenseMatrix::new(2, 2);
+        
+        // Establecemos valores en la matriz original
+        matrix.set(0, 0, 1.0);
+        matrix.set(0, 1, 2.0);
+        matrix.set(1, 0, 3.0);
+        matrix.set(1, 1, 4.0);
+        
+        // La transposición de la matriz debe intercambiar filas y columnas
+        let transposed = matrix.transpose_conjugate();
+        
+        // Verificamos que los valores sean los correctos
+        assert_eq!(*transposed.get(0, 0), 1.0);
+        assert_eq!(*transposed.get(0, 1), 3.0);
+        assert_eq!(*transposed.get(1, 0), 2.0);
+        assert_eq!(*transposed.get(1, 1), 4.0);
+    }
+
+
+
+    #[test]
+    fn test_transpose_conjugate_3x2() {
+        let mut matrix = DenseMatrix::new(3, 2);
+        
+        // Establecemos valores en la matriz original
+        matrix.set(0, 0, 1.0);
+        matrix.set(0, 1, 2.0);
+        matrix.set(1, 0, 3.0);
+        matrix.set(1, 1, 4.0);
+        matrix.set(2, 0, 5.0);
+        matrix.set(2, 1, 6.0);
+        
+        // La transposición de la matriz debe intercambiar filas y columnas
+        let transposed = matrix.transpose_conjugate();
+        
+        // Verificamos que los valores sean los correctos
+        assert_eq!(*transposed.get(0, 0), 1.0);
+        assert_eq!(*transposed.get(1, 0), 2.0);
+        assert_eq!(*transposed.get(0, 1), 3.0);
+        assert_eq!(*transposed.get(1, 1), 4.0);
+        assert_eq!(*transposed.get(0, 2), 5.0);
+        assert_eq!(*transposed.get(1, 2), 6.0);
+    }
+
+    #[test]
+fn test_get_2x3() {
+    let mut matrix = DenseMatrix::new(2, 3);
+    
+    // Establecemos valores en la matriz
+    matrix.set(0, 0, 1.0);
+    matrix.set(0, 1, 2.0);
+    matrix.set(0, 2, 3.0);
+    matrix.set(1, 0, 4.0);
+    matrix.set(1, 1, 5.0);
+    matrix.set(1, 2, 6.0);
+    
+    // Verificamos que los valores obtenidos son correctos
+    assert_eq!(*matrix.get(0, 0), 1.0);  // Fila 0, Columna 0
+    assert_eq!(*matrix.get(0, 1), 2.0);  // Fila 0, Columna 1
+    assert_eq!(*matrix.get(0, 2), 3.0);  // Fila 0, Columna 2
+    assert_eq!(*matrix.get(1, 0), 4.0);  // Fila 1, Columna 0
+    assert_eq!(*matrix.get(1, 1), 5.0);  // Fila 1, Columna 1
+    assert_eq!(*matrix.get(1, 2), 6.0);  // Fila 1, Columna 2
+}
+
+    #[test]
+    fn test_transpose_conjugate_2x3() {
+        let mut matrix = DenseMatrix::new(2, 3);
+        
+        // Establecemos valores en la matriz original
+        matrix.set(0, 0, 1.0);
+        matrix.set(0, 1, 2.0);
+        matrix.set(0, 2, 3.0);
+        matrix.set(1, 0, 4.0);
+        matrix.set(1, 1, 5.0);
+        matrix.set(1, 2, 6.0);
+        
+        // La transposición de la matriz debe intercambiar filas y columnas
+        let transposed = matrix.transpose_conjugate();
+        
+        
+        println!("{:?}", matrix.data);
+        println!("{:?}", transposed.data);
+
+        // Verificamos que los valores sean los correctos
+        assert_eq!(*transposed.get(0, 0), 1.0);
+        assert_eq!(*transposed.get(0, 1), 4.0);
+        assert_eq!(*transposed.get(1, 0), 2.0);
+        assert_eq!(*transposed.get(1, 1), 5.0);
+        assert_eq!(*transposed.get(2, 0), 3.0);
+        assert_eq!(*transposed.get(2, 1), 6.0);
+    }
+
+
+
+    fn test_transpose_manual() {
+        // Paso 1: Crear una matriz original 2x3
+        let mut original = DenseMatrix::new(2, 3); 
+        original.set(0, 0, 1.0);
+        original.set(0, 1, 2.0);
+        original.set(0, 2, 3.0);
+        original.set(1, 0, 4.0);
+        original.set(1, 1, 5.0);
+        original.set(1, 2, 6.0);
+
+        // Paso 2: Crear la matriz transpuesta de 3x2
+        let mut transposed = DenseMatrix::new(3, 2);
+
+        // Paso 3: Usar get y set para transponer la matriz manualmente
+        transposed.set(0, 0, *original.get(0, 0)); // (0, 0) -> (0, 0)
+        transposed.set(1, 0, *original.get(1, 0)); // (1, 0) -> (0, 1)
+        transposed.set(0, 1, *original.get(0, 1)); // (0, 1) -> (1, 0)
+        transposed.set(1, 1, *original.get(1, 1)); // (1, 1) -> (1, 1)
+        transposed.set(2, 0, *original.get(0, 2)); // (0, 2) -> (2, 0)
+        transposed.set(2, 1, *original.get(1, 2)); // (1, 2) -> (2, 1)
+
+        // Paso 4: Verificar que la transposición es correcta
+        assert_eq!(*transposed.get(0, 0), 1.0); // Primer valor de la matriz transpuesta
+        assert_eq!(*transposed.get(1, 0), 2.0); // Segundo valor de la matriz transpuesta
+        assert_eq!(*transposed.get(2, 0), 3.0); // Tercer valor de la matriz transpuesta
+
+        assert_eq!(*transposed.get(0, 1), 4.0); // Primer valor de la segunda columna transpuesta
+        assert_eq!(*transposed.get(1, 1), 5.0); // Segundo valor de la segunda columna transpuesta
+        assert_eq!(*transposed.get(2, 1), 6.0); // Tercer valor de la segunda columna transpuesta
+    }
+
+
+
+    #[test]
+fn test_matmul_2x2() {
+    let mut matrix_a = DenseMatrix::new(2, 2);
+    matrix_a.set(0, 0, 1.0);
+    matrix_a.set(0, 1, 2.0);
+    matrix_a.set(1, 0, 3.0);
+    matrix_a.set(1, 1, 4.0);
+
+    let mut matrix_b = DenseMatrix::new(2, 2);
+    matrix_b.set(0, 0, 2.0);
+    matrix_b.set(0, 1, 0.0);
+    matrix_b.set(1, 0, 1.0);
+    matrix_b.set(1, 1, 2.0);
+
+    let result = matrix_a.matmul(&matrix_b);
+
+    assert_eq!(*result.get(0, 0), 4.0);
+    assert_eq!(*result.get(0, 1), 4.0);
+    assert_eq!(*result.get(1, 0), 10.0);
+    assert_eq!(*result.get(1, 1), 8.0);
+}
+
+#[test]
+fn test_matmul_3x2_2x3() {
+    let mut matrix_a = DenseMatrix::new(3, 2);
+    matrix_a.set(0, 0, 1.0);
+    matrix_a.set(0, 1, 2.0);
+    matrix_a.set(1, 0, 3.0);
+    matrix_a.set(1, 1, 4.0);
+    matrix_a.set(2, 0, 5.0);
+    matrix_a.set(2, 1, 6.0);
+
+    let mut matrix_b = DenseMatrix::new(2, 3);
+    matrix_b.set(0, 0, 7.0);
+    matrix_b.set(0, 1, 8.0);
+    matrix_b.set(0, 2, 9.0);
+    matrix_b.set(1, 0, 10.0);
+    matrix_b.set(1, 1, 11.0);
+    matrix_b.set(1, 2, 12.0);
+
+    let result = matrix_a.matmul(&matrix_b);
+
+    assert_eq!(*result.get(0, 0), 27.0);
+    assert_eq!(*result.get(0, 1), 30.0);
+    assert_eq!(*result.get(0, 2), 33.0);
+    assert_eq!(*result.get(1, 0), 61.0);
+    assert_eq!(*result.get(1, 1), 68.0);
+    assert_eq!(*result.get(1, 2), 75.0);
+    assert_eq!(*result.get(2, 0), 95.0);
+    assert_eq!(*result.get(2, 1), 106.0);
+    assert_eq!(*result.get(2, 2), 117.0);
+}
+
+#[test]
+fn test_matmul_1x3_3x1() {
+    let mut matrix_a = DenseMatrix::new(1, 3);
+    matrix_a.set(0, 0, 1.0);
+    matrix_a.set(0, 1, 2.0);
+    matrix_a.set(0, 2, 3.0);
+
+    let mut matrix_b = DenseMatrix::new(3, 1);
+    matrix_b.set(0, 0, 4.0);
+    matrix_b.set(1, 0, 5.0);
+    matrix_b.set(2, 0, 6.0);
+
+    let result = matrix_a.matmul(&matrix_b);
+
+    assert_eq!(*result.get(0, 0), 32.0);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_subtract_2x2() {
+        let mut matrix_a = DenseMatrix::new(2, 2);
+        matrix_a.set(0, 0, 5.0);
+        matrix_a.set(0, 1, 6.0);
+        matrix_a.set(1, 0, 7.0);
+        matrix_a.set(1, 1, 8.0);
+
+        let mut matrix_b = DenseMatrix::new(2, 2);
+        matrix_b.set(0, 0, 1.0);
+        matrix_b.set(0, 1, 2.0);
+        matrix_b.set(1, 0, 3.0);
+        matrix_b.set(1, 1, 4.0);
+
+        let result = matrix_a.subtract(&matrix_b);
+
+        assert_eq!(*result.get(0, 0), 4.0);
+        assert_eq!(*result.get(0, 1), 4.0);
+        assert_eq!(*result.get(1, 0), 4.0);
+        assert_eq!(*result.get(1, 1), 4.0);
+    }
+
+    #[test]
+    fn test_subtract_3x3() {
+        let mut matrix_a = DenseMatrix::new(3, 3);
+        matrix_a.set(0, 0, 9.0);
+        matrix_a.set(0, 1, 8.0);
+        matrix_a.set(0, 2, 7.0);
+        matrix_a.set(1, 0, 6.0);
+        matrix_a.set(1, 1, 5.0);
+        matrix_a.set(1, 2, 4.0);
+        matrix_a.set(2, 0, 3.0);
+        matrix_a.set(2, 1, 2.0);
+        matrix_a.set(2, 2, 1.0);
+
+        let mut matrix_b = DenseMatrix::new(3, 3);
+        matrix_b.set(0, 0, 1.0);
+        matrix_b.set(0, 1, 2.0);
+        matrix_b.set(0, 2, 3.0);
+        matrix_b.set(1, 0, 4.0);
+        matrix_b.set(1, 1, 5.0);
+        matrix_b.set(1, 2, 6.0);
+        matrix_b.set(2, 0, 7.0);
+        matrix_b.set(2, 1, 8.0);
+        matrix_b.set(2, 2, 9.0);
+
+        let result = matrix_a.subtract(&matrix_b);
+
+        assert_eq!(*result.get(0, 0), 8.0);
+        assert_eq!(*result.get(0, 1), 6.0);
+        assert_eq!(*result.get(0, 2), 4.0);
+        assert_eq!(*result.get(1, 0), 2.0);
+        assert_eq!(*result.get(1, 1), 0.0);
+        assert_eq!(*result.get(1, 2), -2.0);
+        assert_eq!(*result.get(2, 0), -4.0);
+        assert_eq!(*result.get(2, 1), -6.0);
+        assert_eq!(*result.get(2, 2), -8.0);
+    }
+
+    #[test]
+    fn test_subtract_1x1() {
+        let mut matrix_a = DenseMatrix::new(1, 1);
+        matrix_a.set(0, 0, 10.0);
+
+        let mut matrix_b = DenseMatrix::new(1, 1);
+        matrix_b.set(0, 0, 5.0);
+
+        let result = matrix_a.subtract(&matrix_b);
+
+        assert_eq!(*result.get(0, 0), 5.0);
+    }
+
+    #[test]
+    fn test_subtract_2x3() {
+        let mut matrix_a = DenseMatrix::new(2, 3);
+        matrix_a.set(0, 0, 1.0);
+        matrix_a.set(0, 1, 2.0);
+        matrix_a.set(0, 2, 3.0);
+        matrix_a.set(1, 0, 4.0);
+        matrix_a.set(1, 1, 5.0);
+        matrix_a.set(1, 2, 6.0);
+
+        let mut matrix_b = DenseMatrix::new(2, 3);
+        matrix_b.set(0, 0, 6.0);
+        matrix_b.set(0, 1, 5.0);
+        matrix_b.set(0, 2, 4.0);
+        matrix_b.set(1, 0, 3.0);
+        matrix_b.set(1, 1, 2.0);
+        matrix_b.set(1, 2, 1.0);
+
+        let result = matrix_a.subtract(&matrix_b);
+
+        assert_eq!(*result.get(0, 0), -5.0);
+        assert_eq!(*result.get(0, 1), -3.0);
+        assert_eq!(*result.get(0, 2), -1.0);
+        assert_eq!(*result.get(1, 0), 1.0);
+        assert_eq!(*result.get(1, 1), 3.0);
+        assert_eq!(*result.get(1, 2), 5.0);
+    }
+}
 
 
 }

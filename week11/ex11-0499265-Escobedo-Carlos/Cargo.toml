@@ -1,0 +1,9 @@
+[package]
+name = "ex11-0499265-Escobedo-Carlos"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+rayon = "1.7"
+num = "0.4"
+crc32fast = "1.3"

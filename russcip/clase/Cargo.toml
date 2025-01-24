@@ -1,0 +1,7 @@
+[package]
+name = "clase"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+russcip = { git = "https://www.github.com/scipopt/russcip" }

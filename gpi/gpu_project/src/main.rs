@@ -1,5 +1,9 @@
 fn main() {
-    let matriz1  =  Matrix::new(1,2,vec![1.1, 2.2]);
+    let matriz1  =  Matrix::new(2,1,vec![1.1, 2.2]);
+
+    let matriz2= Matrix::new(1,2, vec![2.2,1.1]);
+
+    let mult=matriz1.multiply(&matriz2);
 
     print!("{}", matriz1.get(0,0));
 }
@@ -39,6 +43,24 @@ impl Matrix {
 
     fn set(&mut self, row: usize, col: usize, value: f64) {
         self.data[row * self.cols + col] = value;
+    }
+
+    fn multiply(&self, other: &Matrix) -> Matrix {
+        assert_eq!(self.cols, other.rows, "Incompatible matrices for multiplication");
+
+        let mut result = Matrix::zeros(self.rows, other.cols);
+
+        for i in 0..self.rows {
+            for j in 0..other.cols {
+                let mut sum = 0.0;
+                for k in 0..self.cols {
+                    sum += self.get(i, k) * other.get(k, j);
+                }
+                result.set(i, j, sum);
+            }
+        }
+
+        result
     }
 }
 
@@ -84,4 +106,19 @@ mod tests {
         matrix.set(0, 0, 5.0);
         assert_eq!(matrix.get(0, 0), 5.0);
     }
+
+    #[test]
+    fn test_matrix_multiply() {
+        let matrix1 = Matrix::new(2, 3, vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0]);
+        let matrix2 = Matrix::new(3, 2, vec![7.0, 8.0, 9.0, 10.0, 11.0, 12.0]);
+        let result = matrix1.multiply(&matrix2);
+
+        assert_eq!(result.rows, 2);
+        assert_eq!(result.cols, 2);
+        assert_eq!(result.get(0, 0), 58.0);
+        assert_eq!(result.get(0, 1), 64.0);
+        assert_eq!(result.get(1, 0), 139.0);
+        assert_eq!(result.get(1, 1), 154.0);
+    }
 }
+

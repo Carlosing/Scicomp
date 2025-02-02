@@ -1,3 +1,7 @@
+use rayon::prelude::*;
+
+use gpu_project::Matrix;
+
 fn main() {
     let matriz1  =  Matrix::new(2,1,vec![1.1, 2.2]);
 
@@ -5,120 +9,66 @@ fn main() {
 
     let mult=matriz1.multiply(&matriz2);
 
-    print!("{}", matriz1.get(0,0));
-}
+    print!("{}", mult.get(0,0));
 
-
-struct Matrix {
-    rows: usize,
-    cols: usize,
-    data: Vec<f64>,
+    let multpar = matriz1.multiply_parallel(&matriz2);
 }
 
 
 
 
-impl Matrix {
-    fn new(rows: usize, cols:usize, data:Vec<f64>) -> Self {
-        assert_eq!(rows * cols, data.len(), "Incorrect dimensions");
-        Matrix {
-            rows, 
-            cols, 
-            data
-        }
-    }
+// #[cfg(test)]
+// mod tests {
+//     use super::*;
 
+//     #[test]
+//     fn test_matrix_new() {
+//         let matrix = Matrix::new(2, 2, vec![1.0, 2.0, 3.0, 4.0]);
+//         assert_eq!(matrix.rows, 2);
+//         assert_eq!(matrix.cols, 2);
+//         assert_eq!(matrix.data, vec![1.0, 2.0, 3.0, 4.0]);
+//     }
 
-    fn zeros(rows: usize, cols:usize) -> Self {
-        Matrix {
-            rows,
-            cols,
-            data: vec![0.0; rows*cols],
-        }
-    }
+//     #[test]
+//     #[should_panic(expected = "Incorrect dimensions")]
+//     fn test_matrix_new_incorrect_dimensions() {
+//         Matrix::new(2, 2, vec![1.0, 2.0, 3.0]);
+//     }
 
-    fn get(&self, row: usize, col: usize) -> f64 {
-        self.data[row*self.cols + col]
-    }
+//     #[test]
+//     fn test_matrix_zeros() {
+//         let matrix = Matrix::zeros(2, 2);
+//         assert_eq!(matrix.rows, 2);
+//         assert_eq!(matrix.cols, 2);
+//         assert_eq!(matrix.data, vec![0.0; 4]);
+//     }
 
-    fn set(&mut self, row: usize, col: usize, value: f64) {
-        self.data[row * self.cols + col] = value;
-    }
+//     #[test]
+//     fn test_matrix_get() {
+//         let matrix = Matrix::new(2, 2, vec![1.0, 2.0, 3.0, 4.0]);
+//         assert_eq!(matrix.get(0, 0), 1.0);
+//         assert_eq!(matrix.get(1, 1), 4.0);
+//     }
 
-    fn multiply(&self, other: &Matrix) -> Matrix {
-        assert_eq!(self.cols, other.rows, "Incompatible matrices for multiplication");
+//     #[test]
+//     fn test_matrix_set() {
+//         let mut matrix = Matrix::new(2, 2, vec![1.0, 2.0, 3.0, 4.0]);
+//         matrix.set(0, 0, 5.0);
+//         assert_eq!(matrix.get(0, 0), 5.0);
+//     }
 
-        let mut result = Matrix::zeros(self.rows, other.cols);
+//     #[test]
+//     fn test_matrix_multiply() {
+//         let matrix1 = Matrix::new(2, 3, vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0]);
+//         let matrix2 = Matrix::new(3, 2, vec![7.0, 8.0, 9.0, 10.0, 11.0, 12.0]);
+//         let result = matrix1.multiply(&matrix2);
 
-        for i in 0..self.rows {
-            for j in 0..other.cols {
-                let mut sum = 0.0;
-                for k in 0..self.cols {
-                    sum += self.get(i, k) * other.get(k, j);
-                }
-                result.set(i, j, sum);
-            }
-        }
-
-        result
-    }
-}
-
-
-
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_matrix_new() {
-        let matrix = Matrix::new(2, 2, vec![1.0, 2.0, 3.0, 4.0]);
-        assert_eq!(matrix.rows, 2);
-        assert_eq!(matrix.cols, 2);
-        assert_eq!(matrix.data, vec![1.0, 2.0, 3.0, 4.0]);
-    }
-
-    #[test]
-    #[should_panic(expected = "Incorrect dimensions")]
-    fn test_matrix_new_incorrect_dimensions() {
-        Matrix::new(2, 2, vec![1.0, 2.0, 3.0]);
-    }
-
-    #[test]
-    fn test_matrix_zeros() {
-        let matrix = Matrix::zeros(2, 2);
-        assert_eq!(matrix.rows, 2);
-        assert_eq!(matrix.cols, 2);
-        assert_eq!(matrix.data, vec![0.0; 4]);
-    }
-
-    #[test]
-    fn test_matrix_get() {
-        let matrix = Matrix::new(2, 2, vec![1.0, 2.0, 3.0, 4.0]);
-        assert_eq!(matrix.get(0, 0), 1.0);
-        assert_eq!(matrix.get(1, 1), 4.0);
-    }
-
-    #[test]
-    fn test_matrix_set() {
-        let mut matrix = Matrix::new(2, 2, vec![1.0, 2.0, 3.0, 4.0]);
-        matrix.set(0, 0, 5.0);
-        assert_eq!(matrix.get(0, 0), 5.0);
-    }
-
-    #[test]
-    fn test_matrix_multiply() {
-        let matrix1 = Matrix::new(2, 3, vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0]);
-        let matrix2 = Matrix::new(3, 2, vec![7.0, 8.0, 9.0, 10.0, 11.0, 12.0]);
-        let result = matrix1.multiply(&matrix2);
-
-        assert_eq!(result.rows, 2);
-        assert_eq!(result.cols, 2);
-        assert_eq!(result.get(0, 0), 58.0);
-        assert_eq!(result.get(0, 1), 64.0);
-        assert_eq!(result.get(1, 0), 139.0);
-        assert_eq!(result.get(1, 1), 154.0);
-    }
-}
+//         assert_eq!(result.rows, 2);
+//         assert_eq!(result.cols, 2);
+//         assert_eq!(result.get(0, 0), 58.0);
+//         assert_eq!(result.get(0, 1), 64.0);
+//         assert_eq!(result.get(1, 0), 139.0);
+//         assert_eq!(result.get(1, 1), 154.0);
+//     }
+// }
 

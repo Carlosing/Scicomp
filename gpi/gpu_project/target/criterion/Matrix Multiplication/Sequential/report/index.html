@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Matrix Multiplication/Sequential Summary - Criterion.rs</title>
+    <style type="text/css">
+        body {
+            font: 14px Helvetica Neue;
+            text-rendering: optimizelegibility;
+        }
+
+        .body {
+            width: 960px;
+            margin: auto;
+        }
+
+        a:link {
+            color: #1F78B4;
+            text-decoration: none;
+        }
+
+        h2 {
+            font-size: 36px;
+            font-weight: 300;
+        }
+
+        h3 {
+            font-size: 24px;
+            font-weight: 300;
+        }
+
+        #footer {
+            height: 40px;
+            background: #888;
+            color: white;
+            font-size: larger;
+            font-weight: 300;
+        }
+
+        #footer a {
+            color: white;
+            text-decoration: underline;
+        }
+
+        #footer p {
+            text-align: center
+        }
+    </style>
+</head>
+
+<body>
+    <div class="body">
+        <h2>Matrix Multiplication/Sequential</h2>
+        <h3>Violin Plot</h3>
+        <a href="violin.svg">
+            <img src="violin.svg" alt="Violin Plot" />
+        </a>
+        <p>This chart shows the relationship between function/parameter and iteration time. The thickness of the shaded
+            region indicates the probability that a measurement of the given function/parameter would take a particular
+            length of time.</p>
+        <section class="plots">
+            <a href="../../../Matrix Multiplication/Sequential/2x2/report/index.html">
+                <h4>Matrix Multiplication/Sequential/2x2</h4>
+            </a>
+            <table width="100%">
+                <tbody>
+                    <tr>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/2x2/report/pdf.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/2x2/report/pdf_small.svg" alt="PDF of Slope" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/2x2/report/regression.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/2x2/report/regression_small.svg" alt="Regression" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        <section class="plots">
+            <a href="../../../Matrix Multiplication/Sequential/2x4/report/index.html">
+                <h4>Matrix Multiplication/Sequential/2x4</h4>
+            </a>
+            <table width="100%">
+                <tbody>
+                    <tr>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/2x4/report/pdf.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/2x4/report/pdf_small.svg" alt="PDF of Slope" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/2x4/report/regression.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/2x4/report/regression_small.svg" alt="Regression" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        <section class="plots">
+            <a href="../../../Matrix Multiplication/Sequential/2x10/report/index.html">
+                <h4>Matrix Multiplication/Sequential/2x10</h4>
+            </a>
+            <table width="100%">
+                <tbody>
+                    <tr>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/2x10/report/pdf.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/2x10/report/pdf_small.svg" alt="PDF of Slope" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/2x10/report/regression.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/2x10/report/regression_small.svg" alt="Regression" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        <section class="plots">
+            <a href="../../../Matrix Multiplication/Sequential/2x100/report/index.html">
+                <h4>Matrix Multiplication/Sequential/2x100</h4>
+            </a>
+            <table width="100%">
+                <tbody>
+                    <tr>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/2x100/report/pdf.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/2x100/report/pdf_small.svg" alt="PDF of Slope" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/2x100/report/regression.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/2x100/report/regression_small.svg" alt="Regression" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        <section class="plots">
+            <a href="../../../Matrix Multiplication/Sequential/2x200/report/index.html">
+                <h4>Matrix Multiplication/Sequential/2x200</h4>
+            </a>
+            <table width="100%">
+                <tbody>
+                    <tr>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/2x200/report/pdf.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/2x200/report/pdf_small.svg" alt="PDF of Slope" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/2x200/report/regression.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/2x200/report/regression_small.svg" alt="Regression" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        <section class="plots">
+            <a href="../../../Matrix Multiplication/Sequential/2x400/report/index.html">
+                <h4>Matrix Multiplication/Sequential/2x400</h4>
+            </a>
+            <table width="100%">
+                <tbody>
+                    <tr>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/2x400/report/pdf.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/2x400/report/pdf_small.svg" alt="PDF of Slope" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/2x400/report/regression.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/2x400/report/regression_small.svg" alt="Regression" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        <section class="plots">
+            <a href="../../../Matrix Multiplication/Sequential/2x600/report/index.html">
+                <h4>Matrix Multiplication/Sequential/2x600</h4>
+            </a>
+            <table width="100%">
+                <tbody>
+                    <tr>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/2x600/report/pdf.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/2x600/report/pdf_small.svg" alt="PDF of Slope" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/2x600/report/regression.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/2x600/report/regression_small.svg" alt="Regression" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        <section class="plots">
+            <a href="../../../Matrix Multiplication/Sequential/4x2/report/index.html">
+                <h4>Matrix Multiplication/Sequential/4x2</h4>
+            </a>
+            <table width="100%">
+                <tbody>
+                    <tr>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/4x2/report/pdf.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/4x2/report/pdf_small.svg" alt="PDF of Slope" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/4x2/report/regression.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/4x2/report/regression_small.svg" alt="Regression" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        <section class="plots">
+            <a href="../../../Matrix Multiplication/Sequential/4x4/report/index.html">
+                <h4>Matrix Multiplication/Sequential/4x4</h4>
+            </a>
+            <table width="100%">
+                <tbody>
+                    <tr>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/4x4/report/pdf.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/4x4/report/pdf_small.svg" alt="PDF of Slope" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/4x4/report/regression.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/4x4/report/regression_small.svg" alt="Regression" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        <section class="plots">
+            <a href="../../../Matrix Multiplication/Sequential/4x10/report/index.html">
+                <h4>Matrix Multiplication/Sequential/4x10</h4>
+            </a>
+            <table width="100%">
+                <tbody>
+                    <tr>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/4x10/report/pdf.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/4x10/report/pdf_small.svg" alt="PDF of Slope" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/4x10/report/regression.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/4x10/report/regression_small.svg" alt="Regression" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        <section class="plots">
+            <a href="../../../Matrix Multiplication/Sequential/4x100/report/index.html">
+                <h4>Matrix Multiplication/Sequential/4x100</h4>
+            </a>
+            <table width="100%">
+                <tbody>
+                    <tr>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/4x100/report/pdf.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/4x100/report/pdf_small.svg" alt="PDF of Slope" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/4x100/report/regression.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/4x100/report/regression_small.svg" alt="Regression" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        <section class="plots">
+            <a href="../../../Matrix Multiplication/Sequential/4x200/report/index.html">
+                <h4>Matrix Multiplication/Sequential/4x200</h4>
+            </a>
+            <table width="100%">
+                <tbody>
+                    <tr>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/4x200/report/pdf.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/4x200/report/pdf_small.svg" alt="PDF of Slope" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/4x200/report/regression.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/4x200/report/regression_small.svg" alt="Regression" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        <section class="plots">
+            <a href="../../../Matrix Multiplication/Sequential/4x400/report/index.html">
+                <h4>Matrix Multiplication/Sequential/4x400</h4>
+            </a>
+            <table width="100%">
+                <tbody>
+                    <tr>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/4x400/report/pdf.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/4x400/report/pdf_small.svg" alt="PDF of Slope" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/4x400/report/regression.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/4x400/report/regression_small.svg" alt="Regression" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        <section class="plots">
+            <a href="../../../Matrix Multiplication/Sequential/4x600/report/index.html">
+                <h4>Matrix Multiplication/Sequential/4x600</h4>
+            </a>
+            <table width="100%">
+                <tbody>
+                    <tr>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/4x600/report/pdf.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/4x600/report/pdf_small.svg" alt="PDF of Slope" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/4x600/report/regression.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/4x600/report/regression_small.svg" alt="Regression" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        <section class="plots">
+            <a href="../../../Matrix Multiplication/Sequential/10x2/report/index.html">
+                <h4>Matrix Multiplication/Sequential/10x2</h4>
+            </a>
+            <table width="100%">
+                <tbody>
+                    <tr>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/10x2/report/pdf.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/10x2/report/pdf_small.svg" alt="PDF of Slope" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/10x2/report/regression.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/10x2/report/regression_small.svg" alt="Regression" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        <section class="plots">
+            <a href="../../../Matrix Multiplication/Sequential/10x4/report/index.html">
+                <h4>Matrix Multiplication/Sequential/10x4</h4>
+            </a>
+            <table width="100%">
+                <tbody>
+                    <tr>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/10x4/report/pdf.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/10x4/report/pdf_small.svg" alt="PDF of Slope" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/10x4/report/regression.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/10x4/report/regression_small.svg" alt="Regression" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        <section class="plots">
+            <a href="../../../Matrix Multiplication/Sequential/10x10/report/index.html">
+                <h4>Matrix Multiplication/Sequential/10x10</h4>
+            </a>
+            <table width="100%">
+                <tbody>
+                    <tr>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/10x10/report/pdf.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/10x10/report/pdf_small.svg" alt="PDF of Slope" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/10x10/report/regression.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/10x10/report/regression_small.svg" alt="Regression" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        <section class="plots">
+            <a href="../../../Matrix Multiplication/Sequential/10x100/report/index.html">
+                <h4>Matrix Multiplication/Sequential/10x100</h4>
+            </a>
+            <table width="100%">
+                <tbody>
+                    <tr>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/10x100/report/pdf.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/10x100/report/pdf_small.svg" alt="PDF of Slope" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/10x100/report/regression.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/10x100/report/regression_small.svg" alt="Regression" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        <section class="plots">
+            <a href="../../../Matrix Multiplication/Sequential/10x200/report/index.html">
+                <h4>Matrix Multiplication/Sequential/10x200</h4>
+            </a>
+            <table width="100%">
+                <tbody>
+                    <tr>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/10x200/report/pdf.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/10x200/report/pdf_small.svg" alt="PDF of Slope" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/10x200/report/regression.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/10x200/report/regression_small.svg" alt="Regression" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        <section class="plots">
+            <a href="../../../Matrix Multiplication/Sequential/10x400/report/index.html">
+                <h4>Matrix Multiplication/Sequential/10x400</h4>
+            </a>
+            <table width="100%">
+                <tbody>
+                    <tr>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/10x400/report/pdf.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/10x400/report/pdf_small.svg" alt="PDF of Slope" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/10x400/report/regression.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/10x400/report/regression_small.svg" alt="Regression" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        <section class="plots">
+            <a href="../../../Matrix Multiplication/Sequential/10x600/report/index.html">
+                <h4>Matrix Multiplication/Sequential/10x600</h4>
+            </a>
+            <table width="100%">
+                <tbody>
+                    <tr>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/10x600/report/pdf.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/10x600/report/pdf_small.svg" alt="PDF of Slope" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/10x600/report/regression.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/10x600/report/regression_small.svg" alt="Regression" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        <section class="plots">
+            <a href="../../../Matrix Multiplication/Sequential/100x2/report/index.html">
+                <h4>Matrix Multiplication/Sequential/100x2</h4>
+            </a>
+            <table width="100%">
+                <tbody>
+                    <tr>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/100x2/report/pdf.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/100x2/report/pdf_small.svg" alt="PDF of Slope" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/100x2/report/regression.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/100x2/report/regression_small.svg" alt="Regression" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        <section class="plots">
+            <a href="../../../Matrix Multiplication/Sequential/100x4/report/index.html">
+                <h4>Matrix Multiplication/Sequential/100x4</h4>
+            </a>
+            <table width="100%">
+                <tbody>
+                    <tr>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/100x4/report/pdf.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/100x4/report/pdf_small.svg" alt="PDF of Slope" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/100x4/report/regression.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/100x4/report/regression_small.svg" alt="Regression" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        <section class="plots">
+            <a href="../../../Matrix Multiplication/Sequential/100x10/report/index.html">
+                <h4>Matrix Multiplication/Sequential/100x10</h4>
+            </a>
+            <table width="100%">
+                <tbody>
+                    <tr>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/100x10/report/pdf.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/100x10/report/pdf_small.svg" alt="PDF of Slope" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/100x10/report/regression.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/100x10/report/regression_small.svg" alt="Regression" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        <section class="plots">
+            <a href="../../../Matrix Multiplication/Sequential/100x100/report/index.html">
+                <h4>Matrix Multiplication/Sequential/100x100</h4>
+            </a>
+            <table width="100%">
+                <tbody>
+                    <tr>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/100x100/report/pdf.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/100x100/report/pdf_small.svg" alt="PDF of Slope" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/100x100/report/regression.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/100x100/report/regression_small.svg" alt="Regression" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        <section class="plots">
+            <a href="../../../Matrix Multiplication/Sequential/100x200/report/index.html">
+                <h4>Matrix Multiplication/Sequential/100x200</h4>
+            </a>
+            <table width="100%">
+                <tbody>
+                    <tr>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/100x200/report/pdf.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/100x200/report/pdf_small.svg" alt="PDF of Slope" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/100x200/report/regression.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/100x200/report/regression_small.svg" alt="Regression" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        <section class="plots">
+            <a href="../../../Matrix Multiplication/Sequential/100x400/report/index.html">
+                <h4>Matrix Multiplication/Sequential/100x400</h4>
+            </a>
+            <table width="100%">
+                <tbody>
+                    <tr>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/100x400/report/pdf.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/100x400/report/pdf_small.svg" alt="PDF of Slope" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/100x400/report/iteration_times.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/100x400/report/iteration_times_small.svg" alt="Iteration Times" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        <section class="plots">
+            <a href="../../../Matrix Multiplication/Sequential/100x600/report/index.html">
+                <h4>Matrix Multiplication/Sequential/100x600</h4>
+            </a>
+            <table width="100%">
+                <tbody>
+                    <tr>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/100x600/report/pdf.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/100x600/report/pdf_small.svg" alt="PDF of Slope" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/100x600/report/iteration_times.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/100x600/report/iteration_times_small.svg" alt="Iteration Times" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        <section class="plots">
+            <a href="../../../Matrix Multiplication/Sequential/200x2/report/index.html">
+                <h4>Matrix Multiplication/Sequential/200x2</h4>
+            </a>
+            <table width="100%">
+                <tbody>
+                    <tr>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/200x2/report/pdf.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/200x2/report/pdf_small.svg" alt="PDF of Slope" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/200x2/report/regression.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/200x2/report/regression_small.svg" alt="Regression" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        <section class="plots">
+            <a href="../../../Matrix Multiplication/Sequential/200x4/report/index.html">
+                <h4>Matrix Multiplication/Sequential/200x4</h4>
+            </a>
+            <table width="100%">
+                <tbody>
+                    <tr>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/200x4/report/pdf.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/200x4/report/pdf_small.svg" alt="PDF of Slope" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/200x4/report/regression.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/200x4/report/regression_small.svg" alt="Regression" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        <section class="plots">
+            <a href="../../../Matrix Multiplication/Sequential/200x10/report/index.html">
+                <h4>Matrix Multiplication/Sequential/200x10</h4>
+            </a>
+            <table width="100%">
+                <tbody>
+                    <tr>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/200x10/report/pdf.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/200x10/report/pdf_small.svg" alt="PDF of Slope" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/200x10/report/regression.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/200x10/report/regression_small.svg" alt="Regression" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        <section class="plots">
+            <a href="../../../Matrix Multiplication/Sequential/200x100/report/index.html">
+                <h4>Matrix Multiplication/Sequential/200x100</h4>
+            </a>
+            <table width="100%">
+                <tbody>
+                    <tr>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/200x100/report/pdf.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/200x100/report/pdf_small.svg" alt="PDF of Slope" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/200x100/report/iteration_times.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/200x100/report/iteration_times_small.svg" alt="Iteration Times" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        <section class="plots">
+            <a href="../../../Matrix Multiplication/Sequential/200x200/report/index.html">
+                <h4>Matrix Multiplication/Sequential/200x200</h4>
+            </a>
+            <table width="100%">
+                <tbody>
+                    <tr>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/200x200/report/pdf.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/200x200/report/pdf_small.svg" alt="PDF of Slope" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/200x200/report/iteration_times.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/200x200/report/iteration_times_small.svg" alt="Iteration Times" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        <section class="plots">
+            <a href="../../../Matrix Multiplication/Sequential/200x400/report/index.html">
+                <h4>Matrix Multiplication/Sequential/200x400</h4>
+            </a>
+            <table width="100%">
+                <tbody>
+                    <tr>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/200x400/report/pdf.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/200x400/report/pdf_small.svg" alt="PDF of Slope" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/200x400/report/iteration_times.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/200x400/report/iteration_times_small.svg" alt="Iteration Times" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        <section class="plots">
+            <a href="../../../Matrix Multiplication/Sequential/200x600/report/index.html">
+                <h4>Matrix Multiplication/Sequential/200x600</h4>
+            </a>
+            <table width="100%">
+                <tbody>
+                    <tr>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/200x600/report/pdf.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/200x600/report/pdf_small.svg" alt="PDF of Slope" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/200x600/report/iteration_times.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/200x600/report/iteration_times_small.svg" alt="Iteration Times" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        <section class="plots">
+            <a href="../../../Matrix Multiplication/Sequential/400x2/report/index.html">
+                <h4>Matrix Multiplication/Sequential/400x2</h4>
+            </a>
+            <table width="100%">
+                <tbody>
+                    <tr>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/400x2/report/pdf.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/400x2/report/pdf_small.svg" alt="PDF of Slope" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/400x2/report/regression.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/400x2/report/regression_small.svg" alt="Regression" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        <section class="plots">
+            <a href="../../../Matrix Multiplication/Sequential/400x4/report/index.html">
+                <h4>Matrix Multiplication/Sequential/400x4</h4>
+            </a>
+            <table width="100%">
+                <tbody>
+                    <tr>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/400x4/report/pdf.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/400x4/report/pdf_small.svg" alt="PDF of Slope" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/400x4/report/regression.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/400x4/report/regression_small.svg" alt="Regression" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        <section class="plots">
+            <a href="../../../Matrix Multiplication/Sequential/400x10/report/index.html">
+                <h4>Matrix Multiplication/Sequential/400x10</h4>
+            </a>
+            <table width="100%">
+                <tbody>
+                    <tr>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/400x10/report/pdf.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/400x10/report/pdf_small.svg" alt="PDF of Slope" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/400x10/report/regression.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/400x10/report/regression_small.svg" alt="Regression" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        <section class="plots">
+            <a href="../../../Matrix Multiplication/Sequential/400x100/report/index.html">
+                <h4>Matrix Multiplication/Sequential/400x100</h4>
+            </a>
+            <table width="100%">
+                <tbody>
+                    <tr>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/400x100/report/pdf.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/400x100/report/pdf_small.svg" alt="PDF of Slope" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/400x100/report/iteration_times.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/400x100/report/iteration_times_small.svg" alt="Iteration Times" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        <section class="plots">
+            <a href="../../../Matrix Multiplication/Sequential/400x200/report/index.html">
+                <h4>Matrix Multiplication/Sequential/400x200</h4>
+            </a>
+            <table width="100%">
+                <tbody>
+                    <tr>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/400x200/report/pdf.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/400x200/report/pdf_small.svg" alt="PDF of Slope" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/400x200/report/iteration_times.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/400x200/report/iteration_times_small.svg" alt="Iteration Times" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        <section class="plots">
+            <a href="../../../Matrix Multiplication/Sequential/400x400/report/index.html">
+                <h4>Matrix Multiplication/Sequential/400x400</h4>
+            </a>
+            <table width="100%">
+                <tbody>
+                    <tr>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/400x400/report/pdf.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/400x400/report/pdf_small.svg" alt="PDF of Slope" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/400x400/report/iteration_times.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/400x400/report/iteration_times_small.svg" alt="Iteration Times" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        <section class="plots">
+            <a href="../../../Matrix Multiplication/Sequential/400x600/report/index.html">
+                <h4>Matrix Multiplication/Sequential/400x600</h4>
+            </a>
+            <table width="100%">
+                <tbody>
+                    <tr>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/400x600/report/pdf.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/400x600/report/pdf_small.svg" alt="PDF of Slope" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/400x600/report/iteration_times.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/400x600/report/iteration_times_small.svg" alt="Iteration Times" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        <section class="plots">
+            <a href="../../../Matrix Multiplication/Sequential/600x2/report/index.html">
+                <h4>Matrix Multiplication/Sequential/600x2</h4>
+            </a>
+            <table width="100%">
+                <tbody>
+                    <tr>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/600x2/report/pdf.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/600x2/report/pdf_small.svg" alt="PDF of Slope" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/600x2/report/regression.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/600x2/report/regression_small.svg" alt="Regression" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        <section class="plots">
+            <a href="../../../Matrix Multiplication/Sequential/600x4/report/index.html">
+                <h4>Matrix Multiplication/Sequential/600x4</h4>
+            </a>
+            <table width="100%">
+                <tbody>
+                    <tr>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/600x4/report/pdf.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/600x4/report/pdf_small.svg" alt="PDF of Slope" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/600x4/report/regression.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/600x4/report/regression_small.svg" alt="Regression" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        <section class="plots">
+            <a href="../../../Matrix Multiplication/Sequential/600x10/report/index.html">
+                <h4>Matrix Multiplication/Sequential/600x10</h4>
+            </a>
+            <table width="100%">
+                <tbody>
+                    <tr>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/600x10/report/pdf.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/600x10/report/pdf_small.svg" alt="PDF of Slope" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/600x10/report/iteration_times.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/600x10/report/iteration_times_small.svg" alt="Iteration Times" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        <section class="plots">
+            <a href="../../../Matrix Multiplication/Sequential/600x100/report/index.html">
+                <h4>Matrix Multiplication/Sequential/600x100</h4>
+            </a>
+            <table width="100%">
+                <tbody>
+                    <tr>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/600x100/report/pdf.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/600x100/report/pdf_small.svg" alt="PDF of Slope" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/600x100/report/iteration_times.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/600x100/report/iteration_times_small.svg" alt="Iteration Times" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        <section class="plots">
+            <a href="../../../Matrix Multiplication/Sequential/600x200/report/index.html">
+                <h4>Matrix Multiplication/Sequential/600x200</h4>
+            </a>
+            <table width="100%">
+                <tbody>
+                    <tr>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/600x200/report/pdf.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/600x200/report/pdf_small.svg" alt="PDF of Slope" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/600x200/report/iteration_times.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/600x200/report/iteration_times_small.svg" alt="Iteration Times" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        <section class="plots">
+            <a href="../../../Matrix Multiplication/Sequential/600x400/report/index.html">
+                <h4>Matrix Multiplication/Sequential/600x400</h4>
+            </a>
+            <table width="100%">
+                <tbody>
+                    <tr>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/600x400/report/pdf.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/600x400/report/pdf_small.svg" alt="PDF of Slope" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/600x400/report/iteration_times.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/600x400/report/iteration_times_small.svg" alt="Iteration Times" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        <section class="plots">
+            <a href="../../../Matrix Multiplication/Sequential/600x600/report/index.html">
+                <h4>Matrix Multiplication/Sequential/600x600</h4>
+            </a>
+            <table width="100%">
+                <tbody>
+                    <tr>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/600x600/report/pdf.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/600x600/report/pdf_small.svg" alt="PDF of Slope" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                        <td>
+                            <a href="../../../Matrix Multiplication/Sequential/600x600/report/iteration_times.svg">
+                                <img src="../../../Matrix Multiplication/Sequential/600x600/report/iteration_times_small.svg" alt="Iteration Times" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+    </div>
+    <div id="footer">
+        <p>This report was generated by
+            <a href="https://github.com/bheisler/criterion.rs">Criterion.rs</a>, a statistics-driven benchmarking
+            library in Rust.</p>
+    </div>
+</body>
+
+</html>

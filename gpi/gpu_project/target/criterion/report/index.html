@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Index - Criterion.rs</title>
+    <style type="text/css">
+        body {
+            font: 14px Helvetica Neue;
+            text-rendering: optimizelegibility;
+        }
+
+        .body {
+            width: 960px;
+            margin: auto;
+        }
+
+        a:link {
+            color: #1F78B4;
+            text-decoration: none;
+        }
+
+        h2 {
+            font-size: 36px;
+            font-weight: 300;
+        }
+
+        h3 {
+            font-size: 24px;
+            font-weight: 300;
+        }
+
+        #footer {
+            height: 40px;
+            background: #888;
+            color: white;
+            font-size: larger;
+            font-weight: 300;
+        }
+
+        #footer a {
+            color: white;
+            text-decoration: underline;
+        }
+
+        #footer p {
+            text-align: center
+        }
+
+        table {
+            border-collapse: collapse;
+        }
+
+        table,
+        th,
+        td {
+            border: 1px solid #888;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="body">
+        <h2>Criterion.rs Benchmark Index</h2>
+        See individual benchmark pages below for more details.
+        <ul>
+            <li><a href="../Matrix Multiplication/report/index.html">Matrix Multiplication</a></li>
+            
+            <ul>
+                <li>
+                    <table>
+                        <tr>
+                            <th></th>
+                            <th><a href="../Matrix Multiplication/Parallel/report/index.html">Parallel</a></th>
+                            <th><a href="../Matrix Multiplication/Sequential/report/index.html">Sequential</a></th>
+                        </tr>
+                        <tr>
+                            <th>10</th>
+                            <td>Matrix Multiplication/Parallel/10</td>
+                            <td>Matrix Multiplication/Sequential/10</td>
+                        </tr>
+                        <tr>
+                            <th>100</th>
+                            <td>Matrix Multiplication/Parallel/100</td>
+                            <td>Matrix Multiplication/Sequential/100</td>
+                        </tr>
+                        <tr>
+                            <th><a href="../Matrix Multiplication/100x10/report/index.html">100x10</a></th>
+                            <td><a href="../Matrix Multiplication/Parallel/100x10/report/index.html">Matrix Multiplication/Parallel/100x10</a></td>
+                            <td><a href="../Matrix Multiplication/Sequential/100x10/report/index.html">Matrix Multiplication/Sequential/100x10</a></td>
+                        </tr>
+                        <tr>
+                            <th><a href="../Matrix Multiplication/100x100/report/index.html">100x100</a></th>
+                            <td><a href="../Matrix Multiplication/Parallel/100x100/report/index.html">Matrix Multiplication/Parallel/100x100</a></td>
+                            <td><a href="../Matrix Multiplication/Sequential/100x100/report/index.html">Matrix Multiplication/Sequential/100x100</a></td>
+                        </tr>
+                        <tr>
+                            <th><a href="../Matrix Multiplication/100x2/report/index.html">100x2</a></th>
+                            <td><a href="../Matrix Multiplication/Parallel/100x2/report/index.html">Matrix Multiplication/Parallel/100x2</a></td>
+                            <td><a href="../Matrix Multiplication/Sequential/100x2/report/index.html">Matrix Multiplication/Sequential/100x2</a></td>
+                        </tr>
+                        <tr>
+                            <th><a href="../Matrix Multiplication/100x200/report/index.html">100x200</a></th>
+                            <td><a href="../Matrix Multiplication/Parallel/100x200/report/index.html">Matrix Multiplication/Parallel/100x200</a></td>
+                            <td><a href="../Matrix Multiplication/Sequential/100x200/report/index.html">Matrix Multiplication/Sequential/100x200</a></td>
+                        </tr>
+                        <tr>
+                            <th><a href="../Matrix Multiplication/100x4/report/index.html">100x4</a></th>
+                            <td><a href="../Matrix Multiplication/Parallel/100x4/report/index.html">Matrix Multiplication/Parallel/100x4</a></td>
+                            <td><a href="../Matrix Multiplication/Sequential/100x4/report/index.html">Matrix Multiplication/Sequential/100x4</a></td>
+                        </tr>
+                        <tr>
+                            <th><a href="../Matrix Multiplication/100x400/report/index.html">100x400</a></th>
+                            <td><a href="../Matrix Multiplication/Parallel/100x400/report/index.html">Matrix Multiplication/Parallel/100x400</a></td>
+                            <td><a href="../Matrix Multiplication/Sequential/100x400/report/index.html">Matrix Multiplication/Sequential/100x400</a></td>
+                        </tr>
+                        <tr>
+                            <th><a href="../Matrix Multiplication/100x600/report/index.html">100x600</a></th>
+                            <td><a href="../Matrix Multiplication/Parallel/100x600/report/index.html">Matrix Multiplication/Parallel/100x600</a></td>
+                            <td><a href="../Matrix Multiplication/Sequential/100x600/report/index.html">Matrix Multiplication/Sequential/100x600</a></td>
+                        </tr>
+                        <tr>
+                            <th>1024</th>
+                            <td>Matrix Multiplication/Parallel/1024</td>
+                            <td>Matrix Multiplication/Sequential/1024</td>
+                        </tr>
+                        <tr>
+                            <th><a href="../Matrix Multiplication/10x10/report/index.html">10x10</a></th>
+                            <td><a href="../Matrix Multiplication/Parallel/10x10/report/index.html">Matrix Multiplication/Parallel/10x10</a></td>
+                            <td><a href="../Matrix Multiplication/Sequential/10x10/report/index.html">Matrix Multiplication/Sequential/10x10</a></td>
+                        </tr>
+                        <tr>
+                            <th><a href="../Matrix Multiplication/10x100/report/index.html">10x100</a></th>
+                            <td><a href="../Matrix Multiplication/Parallel/10x100/report/index.html">Matrix Multiplication/Parallel/10x100</a></td>
+                            <td><a href="../Matrix Multiplication/Sequential/10x100/report/index.html">Matrix Multiplication/Sequential/10x100</a></td>
+                        </tr>
+                        <tr>
+                            <th><a href="../Matrix Multiplication/10x2/report/index.html">10x2</a></th>
+                            <td><a href="../Matrix Multiplication/Parallel/10x2/report/index.html">Matrix Multiplication/Parallel/10x2</a></td>
+                            <td><a href="../Matrix Multiplication/Sequential/10x2/report/index.html">Matrix Multiplication/Sequential/10x2</a></td>
+                        </tr>
+                        <tr>
+                            <th><a href="../Matrix Multiplication/10x200/report/index.html">10x200</a></th>
+                            <td><a href="../Matrix Multiplication/Parallel/10x200/report/index.html">Matrix Multiplication/Parallel/10x200</a></td>
+                            <td><a href="../Matrix Multiplication/Sequential/10x200/report/index.html">Matrix Multiplication/Sequential/10x200</a></td>
+                        </tr>
+                        <tr>
+                            <th><a href="../Matrix Multiplication/10x4/report/index.html">10x4</a></th>
+                            <td><a href="../Matrix Multiplication/Parallel/10x4/report/index.html">Matrix Multiplication/Parallel/10x4</a></td>
+                            <td><a href="../Matrix Multiplication/Sequential/10x4/report/index.html">Matrix Multiplication/Sequential/10x4</a></td>
+                        </tr>
+                        <tr>
+                            <th><a href="../Matrix Multiplication/10x400/report/index.html">10x400</a></th>
+                            <td><a href="../Matrix Multiplication/Parallel/10x400/report/index.html">Matrix Multiplication/Parallel/10x400</a></td>
+                            <td><a href="../Matrix Multiplication/Sequential/10x400/report/index.html">Matrix Multiplication/Sequential/10x400</a></td>
+                        </tr>
+                        <tr>
+                            <th><a href="../Matrix Multiplication/10x600/report/index.html">10x600</a></th>
+                            <td><a href="../Matrix Multiplication/Parallel/10x600/report/index.html">Matrix Multiplication/Parallel/10x600</a></td>
+                            <td><a href="../Matrix Multiplication/Sequential/10x600/report/index.html">Matrix Multiplication/Sequential/10x600</a></td>
+                        </tr>
+                        <tr>
+                            <th>2</th>
+                            <td>Matrix Multiplication/Parallel/2</td>
+                            <td>Matrix Multiplication/Sequential/2</td>
+                        </tr>
+                        <tr>
+                            <th>200</th>
+                            <td>Matrix Multiplication/Parallel/200</td>
+                            <td>Matrix Multiplication/Sequential/200</td>
+                        </tr>
+                        <tr>
+                            <th><a href="../Matrix Multiplication/200x10/report/index.html">200x10</a></th>
+                            <td><a href="../Matrix Multiplication/Parallel/200x10/report/index.html">Matrix Multiplication/Parallel/200x10</a></td>
+                            <td><a href="../Matrix Multiplication/Sequential/200x10/report/index.html">Matrix Multiplication/Sequential/200x10</a></td>
+                        </tr>
+                        <tr>
+                            <th><a href="../Matrix Multiplication/200x100/report/index.html">200x100</a></th>
+                            <td><a href="../Matrix Multiplication/Parallel/200x100/report/index.html">Matrix Multiplication/Parallel/200x100</a></td>
+                            <td><a href="../Matrix Multiplication/Sequential/200x100/report/index.html">Matrix Multiplication/Sequential/200x100</a></td>
+                        </tr>
+                        <tr>
+                            <th><a href="../Matrix Multiplication/200x2/report/index.html">200x2</a></th>
+                            <td><a href="../Matrix Multiplication/Parallel/200x2/report/index.html">Matrix Multiplication/Parallel/200x2</a></td>
+                            <td><a href="../Matrix Multiplication/Sequential/200x2/report/index.html">Matrix Multiplication/Sequential/200x2</a></td>
+                        </tr>
+                        <tr>
+                            <th><a href="../Matrix Multiplication/200x200/report/index.html">200x200</a></th>
+                            <td><a href="../Matrix Multiplication/Parallel/200x200/report/index.html">Matrix Multiplication/Parallel/200x200</a></td>
+                            <td><a href="../Matrix Multiplication/Sequential/200x200/report/index.html">Matrix Multiplication/Sequential/200x200</a></td>
+                        </tr>
+                        <tr>
+                            <th><a href="../Matrix Multiplication/200x4/report/index.html">200x4</a></th>
+                            <td><a href="../Matrix Multiplication/Parallel/200x4/report/index.html">Matrix Multiplication/Parallel/200x4</a></td>
+                            <td><a href="../Matrix Multiplication/Sequential/200x4/report/index.html">Matrix Multiplication/Sequential/200x4</a></td>
+                        </tr>
+                        <tr>
+                            <th><a href="../Matrix Multiplication/200x400/report/index.html">200x400</a></th>
+                            <td><a href="../Matrix Multiplication/Parallel/200x400/report/index.html">Matrix Multiplication/Parallel/200x400</a></td>
+                            <td><a href="../Matrix Multiplication/Sequential/200x400/report/index.html">Matrix Multiplication/Sequential/200x400</a></td>
+                        </tr>
+                        <tr>
+                            <th><a href="../Matrix Multiplication/200x600/report/index.html">200x600</a></th>
+                            <td><a href="../Matrix Multiplication/Parallel/200x600/report/index.html">Matrix Multiplication/Parallel/200x600</a></td>
+                            <td><a href="../Matrix Multiplication/Sequential/200x600/report/index.html">Matrix Multiplication/Sequential/200x600</a></td>
+                        </tr>
+                        <tr>
+                            <th><a href="../Matrix Multiplication/2x10/report/index.html">2x10</a></th>
+                            <td><a href="../Matrix Multiplication/Parallel/2x10/report/index.html">Matrix Multiplication/Parallel/2x10</a></td>
+                            <td><a href="../Matrix Multiplication/Sequential/2x10/report/index.html">Matrix Multiplication/Sequential/2x10</a></td>
+                        </tr>
+                        <tr>
+                            <th><a href="../Matrix Multiplication/2x100/report/index.html">2x100</a></th>
+                            <td><a href="../Matrix Multiplication/Parallel/2x100/report/index.html">Matrix Multiplication/Parallel/2x100</a></td>
+                            <td><a href="../Matrix Multiplication/Sequential/2x100/report/index.html">Matrix Multiplication/Sequential/2x100</a></td>
+                        </tr>
+                        <tr>
+                            <th><a href="../Matrix Multiplication/2x2/report/index.html">2x2</a></th>
+                            <td><a href="../Matrix Multiplication/Parallel/2x2/report/index.html">Matrix Multiplication/Parallel/2x2</a></td>
+                            <td><a href="../Matrix Multiplication/Sequential/2x2/report/index.html">Matrix Multiplication/Sequential/2x2</a></td>
+                        </tr>
+                        <tr>
+                            <th><a href="../Matrix Multiplication/2x200/report/index.html">2x200</a></th>
+                            <td><a href="../Matrix Multiplication/Parallel/2x200/report/index.html">Matrix Multiplication/Parallel/2x200</a></td>
+                            <td><a href="../Matrix Multiplication/Sequential/2x200/report/index.html">Matrix Multiplication/Sequential/2x200</a></td>
+                        </tr>
+                        <tr>
+                            <th><a href="../Matrix Multiplication/2x4/report/index.html">2x4</a></th>
+                            <td><a href="../Matrix Multiplication/Parallel/2x4/report/index.html">Matrix Multiplication/Parallel/2x4</a></td>
+                            <td><a href="../Matrix Multiplication/Sequential/2x4/report/index.html">Matrix Multiplication/Sequential/2x4</a></td>
+                        </tr>
+                        <tr>
+                            <th><a href="../Matrix Multiplication/2x400/report/index.html">2x400</a></th>
+                            <td><a href="../Matrix Multiplication/Parallel/2x400/report/index.html">Matrix Multiplication/Parallel/2x400</a></td>
+                            <td><a href="../Matrix Multiplication/Sequential/2x400/report/index.html">Matrix Multiplication/Sequential/2x400</a></td>
+                        </tr>
+                        <tr>
+                            <th><a href="../Matrix Multiplication/2x600/report/index.html">2x600</a></th>
+                            <td><a href="../Matrix Multiplication/Parallel/2x600/report/index.html">Matrix Multiplication/Parallel/2x600</a></td>
+                            <td><a href="../Matrix Multiplication/Sequential/2x600/report/index.html">Matrix Multiplication/Sequential/2x600</a></td>
+                        </tr>
+                        <tr>
+                            <th>4</th>
+                            <td>Matrix Multiplication/Parallel/4</td>
+                            <td>Matrix Multiplication/Sequential/4</td>
+                        </tr>
+                        <tr>
+                            <th>400</th>
+                            <td>Matrix Multiplication/Parallel/400</td>
+                            <td>Matrix Multiplication/Sequential/400</td>
+                        </tr>
+                        <tr>
+                            <th><a href="../Matrix Multiplication/400x10/report/index.html">400x10</a></th>
+                            <td><a href="../Matrix Multiplication/Parallel/400x10/report/index.html">Matrix Multiplication/Parallel/400x10</a></td>
+                            <td><a href="../Matrix Multiplication/Sequential/400x10/report/index.html">Matrix Multiplication/Sequential/400x10</a></td>
+                        </tr>
+                        <tr>
+                            <th><a href="../Matrix Multiplication/400x100/report/index.html">400x100</a></th>
+                            <td><a href="../Matrix Multiplication/Parallel/400x100/report/index.html">Matrix Multiplication/Parallel/400x100</a></td>
+                            <td><a href="../Matrix Multiplication/Sequential/400x100/report/index.html">Matrix Multiplication/Sequential/400x100</a></td>
+                        </tr>
+                        <tr>
+                            <th><a href="../Matrix Multiplication/400x2/report/index.html">400x2</a></th>
+                            <td><a href="../Matrix Multiplication/Parallel/400x2/report/index.html">Matrix Multiplication/Parallel/400x2</a></td>
+                            <td><a href="../Matrix Multiplication/Sequential/400x2/report/index.html">Matrix Multiplication/Sequential/400x2</a></td>
+                        </tr>
+                        <tr>
+                            <th><a href="../Matrix Multiplication/400x200/report/index.html">400x200</a></th>
+                            <td><a href="../Matrix Multiplication/Parallel/400x200/report/index.html">Matrix Multiplication/Parallel/400x200</a></td>
+                            <td><a href="../Matrix Multiplication/Sequential/400x200/report/index.html">Matrix Multiplication/Sequential/400x200</a></td>
+                        </tr>
+                        <tr>
+                            <th><a href="../Matrix Multiplication/400x4/report/index.html">400x4</a></th>
+                            <td><a href="../Matrix Multiplication/Parallel/400x4/report/index.html">Matrix Multiplication/Parallel/400x4</a></td>
+                            <td><a href="../Matrix Multiplication/Sequential/400x4/report/index.html">Matrix Multiplication/Sequential/400x4</a></td>
+                        </tr>
+                        <tr>
+                            <th><a href="../Matrix Multiplication/400x400/report/index.html">400x400</a></th>
+                            <td><a href="../Matrix Multiplication/Parallel/400x400/report/index.html">Matrix Multiplication/Parallel/400x400</a></td>
+                            <td><a href="../Matrix Multiplication/Sequential/400x400/report/index.html">Matrix Multiplication/Sequential/400x400</a></td>
+                        </tr>
+                        <tr>
+                            <th><a href="../Matrix Multiplication/400x600/report/index.html">400x600</a></th>
+                            <td><a href="../Matrix Multiplication/Parallel/400x600/report/index.html">Matrix Multiplication/Parallel/400x600</a></td>
+                            <td><a href="../Matrix Multiplication/Sequential/400x600/report/index.html">Matrix Multiplication/Sequential/400x600</a></td>
+                        </tr>
+                        <tr>
+                            <th><a href="../Matrix Multiplication/4x10/report/index.html">4x10</a></th>
+                            <td><a href="../Matrix Multiplication/Parallel/4x10/report/index.html">Matrix Multiplication/Parallel/4x10</a></td>
+                            <td><a href="../Matrix Multiplication/Sequential/4x10/report/index.html">Matrix Multiplication/Sequential/4x10</a></td>
+                        </tr>
+                        <tr>
+                            <th><a href="../Matrix Multiplication/4x100/report/index.html">4x100</a></th>
+                            <td><a href="../Matrix Multiplication/Parallel/4x100/report/index.html">Matrix Multiplication/Parallel/4x100</a></td>
+                            <td><a href="../Matrix Multiplication/Sequential/4x100/report/index.html">Matrix Multiplication/Sequential/4x100</a></td>
+                        </tr>
+                        <tr>
+                            <th><a href="../Matrix Multiplication/4x2/report/index.html">4x2</a></th>
+                            <td><a href="../Matrix Multiplication/Parallel/4x2/report/index.html">Matrix Multiplication/Parallel/4x2</a></td>
+                            <td><a href="../Matrix Multiplication/Sequential/4x2/report/index.html">Matrix Multiplication/Sequential/4x2</a></td>
+                        </tr>
+                        <tr>
+                            <th><a href="../Matrix Multiplication/4x200/report/index.html">4x200</a></th>
+                            <td><a href="../Matrix Multiplication/Parallel/4x200/report/index.html">Matrix Multiplication/Parallel/4x200</a></td>
+                            <td><a href="../Matrix Multiplication/Sequential/4x200/report/index.html">Matrix Multiplication/Sequential/4x200</a></td>
+                        </tr>
+                        <tr>
+                            <th><a href="../Matrix Multiplication/4x4/report/index.html">4x4</a></th>
+                            <td><a href="../Matrix Multiplication/Parallel/4x4/report/index.html">Matrix Multiplication/Parallel/4x4</a></td>
+                            <td><a href="../Matrix Multiplication/Sequential/4x4/report/index.html">Matrix Multiplication/Sequential/4x4</a></td>
+                        </tr>
+                        <tr>
+                            <th><a href="../Matrix Multiplication/4x400/report/index.html">4x400</a></th>
+                            <td><a href="../Matrix Multiplication/Parallel/4x400/report/index.html">Matrix Multiplication/Parallel/4x400</a></td>
+                            <td><a href="../Matrix Multiplication/Sequential/4x400/report/index.html">Matrix Multiplication/Sequential/4x400</a></td>
+                        </tr>
+                        <tr>
+                            <th><a href="../Matrix Multiplication/4x600/report/index.html">4x600</a></th>
+                            <td><a href="../Matrix Multiplication/Parallel/4x600/report/index.html">Matrix Multiplication/Parallel/4x600</a></td>
+                            <td><a href="../Matrix Multiplication/Sequential/4x600/report/index.html">Matrix Multiplication/Sequential/4x600</a></td>
+                        </tr>
+                        <tr>
+                            <th>512</th>
+                            <td>Matrix Multiplication/Parallel/512</td>
+                            <td>Matrix Multiplication/Sequential/512</td>
+                        </tr>
+                        <tr>
+                            <th>600</th>
+                            <td>Matrix Multiplication/Parallel/600</td>
+                            <td>Matrix Multiplication/Sequential/600</td>
+                        </tr>
+                        <tr>
+                            <th><a href="../Matrix Multiplication/600x10/report/index.html">600x10</a></th>
+                            <td><a href="../Matrix Multiplication/Parallel/600x10/report/index.html">Matrix Multiplication/Parallel/600x10</a></td>
+                            <td><a href="../Matrix Multiplication/Sequential/600x10/report/index.html">Matrix Multiplication/Sequential/600x10</a></td>
+                        </tr>
+                        <tr>
+                            <th><a href="../Matrix Multiplication/600x100/report/index.html">600x100</a></th>
+                            <td><a href="../Matrix Multiplication/Parallel/600x100/report/index.html">Matrix Multiplication/Parallel/600x100</a></td>
+                            <td><a href="../Matrix Multiplication/Sequential/600x100/report/index.html">Matrix Multiplication/Sequential/600x100</a></td>
+                        </tr>
+                        <tr>
+                            <th><a href="../Matrix Multiplication/600x2/report/index.html">600x2</a></th>
+                            <td><a href="../Matrix Multiplication/Parallel/600x2/report/index.html">Matrix Multiplication/Parallel/600x2</a></td>
+                            <td><a href="../Matrix Multiplication/Sequential/600x2/report/index.html">Matrix Multiplication/Sequential/600x2</a></td>
+                        </tr>
+                        <tr>
+                            <th><a href="../Matrix Multiplication/600x200/report/index.html">600x200</a></th>
+                            <td><a href="../Matrix Multiplication/Parallel/600x200/report/index.html">Matrix Multiplication/Parallel/600x200</a></td>
+                            <td><a href="../Matrix Multiplication/Sequential/600x200/report/index.html">Matrix Multiplication/Sequential/600x200</a></td>
+                        </tr>
+                        <tr>
+                            <th><a href="../Matrix Multiplication/600x4/report/index.html">600x4</a></th>
+                            <td><a href="../Matrix Multiplication/Parallel/600x4/report/index.html">Matrix Multiplication/Parallel/600x4</a></td>
+                            <td><a href="../Matrix Multiplication/Sequential/600x4/report/index.html">Matrix Multiplication/Sequential/600x4</a></td>
+                        </tr>
+                        <tr>
+                            <th><a href="../Matrix Multiplication/600x400/report/index.html">600x400</a></th>
+                            <td><a href="../Matrix Multiplication/Parallel/600x400/report/index.html">Matrix Multiplication/Parallel/600x400</a></td>
+                            <td><a href="../Matrix Multiplication/Sequential/600x400/report/index.html">Matrix Multiplication/Sequential/600x400</a></td>
+                        </tr>
+                        <tr>
+                            <th><a href="../Matrix Multiplication/600x600/report/index.html">600x600</a></th>
+                            <td><a href="../Matrix Multiplication/Parallel/600x600/report/index.html">Matrix Multiplication/Parallel/600x600</a></td>
+                            <td><a href="../Matrix Multiplication/Sequential/600x600/report/index.html">Matrix Multiplication/Sequential/600x600</a></td>
+                        </tr>
+                    </table>
+                </li>
+            </ul>
+        </ul>
+    </div>
+    <div id="footer">
+        <p>This report was generated by
+            <a href="https://github.com/bheisler/criterion.rs">Criterion.rs</a>, a statistics-driven benchmarking
+            library in Rust.</p>
+    </div>
+</body>
+</html>

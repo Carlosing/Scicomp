@@ -4,3 +4,20 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+rayon = "1.7"
+rand = "0.8"
+
+[dev-dependencies]
+criterion = "0.5"
+
+[lib]
+name = "gpu_project"
+path = "src/lib.rs"
+
+[[bin]]
+name = "gpu_project_bin"
+path = "src/main.rs"
+
+[[bench]]
+name = "matrix_benchmark"
+harness = false
